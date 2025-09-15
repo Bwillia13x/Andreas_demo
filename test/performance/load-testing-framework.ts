@@ -111,8 +111,12 @@ class VirtualUser {
         const delay = 100 + Math.random() * 400;
         await new Promise(resolve => setTimeout(resolve, delay));
       } catch (error) {
-        console.error(`User ${this.userId} error:`, error);
-        break;
+        // Log error but continue making requests - don't let one error stop the entire user
+        console.error(`User ${this.userId} unexpected error (continuing):`, error);
+        this.requestCount++; // Still count it as an attempt
+        
+        // Add a longer delay after errors to avoid overwhelming the server
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
   }
@@ -128,21 +132,24 @@ class VirtualUser {
     try {
       let response: Response;
       
+      // Use endpoint-specific headers if provided
+      const headers = endpoint.headers || {};
+      
       switch (endpoint.method) {
         case 'GET':
-          response = await this.httpClient.get(endpoint.path);
+          response = await this.httpClient.get(endpoint.path, headers);
           break;
         case 'POST':
-          response = await this.httpClient.post(endpoint.path, endpoint.body || {});
+          response = await this.httpClient.post(endpoint.path, endpoint.body || {}, headers);
           break;
         case 'PUT':
-          response = await this.httpClient.put(endpoint.path, endpoint.body || {});
+          response = await this.httpClient.put(endpoint.path, endpoint.body || {}, headers);
           break;
         case 'DELETE':
-          response = await this.httpClient.delete(endpoint.path);
+          response = await this.httpClient.delete(endpoint.path, headers);
           break;
         case 'PATCH':
-          response = await this.httpClient.patch(endpoint.path, endpoint.body || {});
+          response = await this.httpClient.patch(endpoint.path, endpoint.body || {}, headers);
           break;
         default:
           throw new Error(`Unsupported method: ${endpoint.method}`);
@@ -173,6 +180,14 @@ class VirtualUser {
     } catch (error) {
       const responseTime = Date.now() - startTime;
       const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      // Log detailed error information for debugging
+      console.error(`Load test request failed: ${endpoint.method} ${endpoint.path}`, {
+        error: errorMessage,
+        userId: this.userId,
+        responseTime,
+        stack: error instanceof Error ? error.stack : undefined
+      });
       
       this.onMetric({
         timestamp: startTime,
@@ -527,7 +542,7 @@ export function createDefaultLoadTestConfig(baseUrl: string): LoadTestConfig {
       { path: '/api/loyalty/entries', method: 'GET', weight: 4 },
       { path: '/api/marketing/performance', method: 'GET', weight: 3 },
       { path: '/api/profile', method: 'GET', weight: 2 },
-      // Write operations (lower weight) - will be populated with real IDs
+      // Write operations (lower weight) - require authentication
       {
         path: '/api/marketing/campaigns',
         method: 'POST',
@@ -555,7 +570,7 @@ export async function createDynamicLoadTestConfig(baseUrl: string): Promise<Load
   const config = createDefaultLoadTestConfig(baseUrl);
   
   try {
-    // Fetch available services to get real IDs
+    // Fetch available services to get real IDs (services endpoint is public)
     const httpClient = new TestHttpClient(baseUrl);
     const servicesResponse = await httpClient.get('/api/services');
     

@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import fs from "fs";
+import crypto from "crypto";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { getEnvVar } from '../lib/env-security';
@@ -25,20 +26,89 @@ app.set('x-powered-by', false); // Remove X-Powered-By header for security
 // Apply request throttling middleware early in the stack
 app.use(requestThrottler.middleware());
 
-// Configure secure session middleware
+// Enhanced secure session middleware with CSRF protection
+const sessionSecret = (getEnvVar('SESSION_SECRET') as string) || 'fallback-dev-secret-change-in-production';
+
+// Validate session secret strength in production
+if (app.get('env') === 'production' && sessionSecret === 'fallback-dev-secret-change-in-production') {
+  throw new Error('SECURITY ERROR: Must set SESSION_SECRET environment variable in production');
+}
+
 app.use(session({
-  secret: (getEnvVar('SESSION_SECRET') as string) || 'fallback-dev-secret-change-in-production',
-  name: 'sessionId', // Change default session name for security
+  secret: sessionSecret,
+  name: 'mgmt_vibe_sid', // Custom session name for security
   resave: false,
   saveUninitialized: false,
   rolling: true, // Reset expiration on activity
   cookie: {
     secure: app.get('env') === 'production', // HTTPS only in production
     httpOnly: true, // Prevent XSS access to cookies
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    maxAge: 8 * 60 * 60 * 1000, // 8 hours (reduced from 24 for security)
     sameSite: 'strict' // CSRF protection
+  },
+  genid: () => {
+    // Generate cryptographically secure session IDs
+    return crypto.randomBytes(32).toString('hex');
   }
 }));
+
+// CSRF Protection Middleware
+app.use((req: any, res, next) => {
+  // Generate CSRF token for each session
+  if (!req.session.csrfToken) {
+    req.session.csrfToken = crypto.randomBytes(32).toString('hex');
+  }
+  
+  // Add CSRF token to response headers for client access
+  res.setHeader('X-CSRF-Token', req.session.csrfToken);
+  
+  // Validate CSRF token for state-changing operations
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+    const clientToken = req.headers['x-csrf-token'] || req.body._csrf;
+    
+    // Skip CSRF validation for API endpoints with Bearer token auth (they have their own protection)
+    const hasValidAuth = req.headers.authorization?.startsWith('Bearer ');
+    
+    if (!hasValidAuth && clientToken !== req.session.csrfToken) {
+      log('CSRF token validation failed', {
+        method: req.method,
+        path: req.path,
+        ip: req.ip,
+        userAgent: req.get('User-Agent'),
+        hasToken: !!clientToken,
+        hasSession: !!req.session.csrfToken
+      });
+      
+      return res.status(403).json({
+        message: 'CSRF token validation failed',
+        error: 'INVALID_CSRF_TOKEN'
+      });
+    }
+  }
+  
+  next();
+});
+
+// Session Security Headers
+app.use((req, res, next) => {
+  // Regenerate session ID on privilege escalation
+  if (req.path.includes('/auth/login') && req.method === 'POST') {
+    const oldSessionId = req.sessionID;
+    req.session.regenerate((err) => {
+      if (err) {
+        log('Session regeneration failed', { error: err.message, oldSessionId });
+      } else {
+        log('Session regenerated for security', { oldSessionId, newSessionId: req.sessionID });
+      }
+    });
+  }
+  
+  // Add security headers for session management
+  res.setHeader('X-Session-Security', 'enabled');
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  
+  next();
+});
 
 // Configure JSON parsing with size limits for security
 app.use(express.json({ 
@@ -106,10 +176,20 @@ app.use((req, res, next) => {
 
   // Initialize demo data before starting the server
   try {
-    // Import storage here to avoid circular dependencies
-    const { storage } = await import("./storage");
-    await storage.seedDemoData();
-    log('Demo data initialized successfully');
+    const demoSeedingFlag = getEnvVar('DEMO_SEEDING_ENABLED');
+    const isDev = app.get('env') === 'development';
+    const isSmokeMode = process.env.SMOKE_MODE === '1';
+    const shouldSeedDemo = demoSeedingFlag === true ||
+                          (demoSeedingFlag === undefined && (isDev || isSmokeMode));
+
+    if (shouldSeedDemo) {
+      // Import storage here to avoid circular dependencies
+      const { storage } = await import("./storage");
+      await storage.seedDemoData();
+      log('Demo data initialized successfully');
+    } else {
+      log('Demo data seeding skipped (DEMO_SEEDING_ENABLED is false or non-development env)');
+    }
   } catch (error) {
     log(`Error initializing demo data: ${error}`);
     // Continue server startup even if seeding fails

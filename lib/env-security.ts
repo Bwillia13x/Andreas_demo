@@ -28,6 +28,9 @@ export interface EnvironmentConfig {
   DEMO_DATE?: string;
   SMOKE_MODE?: boolean;
   
+  // Demo content controls
+  DEMO_SEEDING_ENABLED?: boolean;
+  
   // Operations
   OPERATIONS_WS_PORT?: number;
   PORT_FILE?: string;
@@ -181,6 +184,9 @@ class EnvironmentSecurityManager {
       DEMO_SEED: this.parseInteger(process.env.DEMO_SEED),
       DEMO_DATE: this.sanitizeString(process.env.DEMO_DATE),
       SMOKE_MODE: this.parseBoolean(process.env.SMOKE_MODE),
+      
+      // Demo content controls (default: enabled in development only)
+      DEMO_SEEDING_ENABLED: this.parseBoolean(process.env.DEMO_SEEDING_ENABLED),
       
       // Operations
       OPERATIONS_WS_PORT: this.parseInteger(process.env.OPERATIONS_WS_PORT, 8080, 1, 65535),
@@ -386,6 +392,15 @@ export const envSecurity = EnvironmentSecurityManager.getInstance();
 // Convenience functions for backward compatibility
 export function getEnvVar<K extends keyof EnvironmentConfig>(key: K): EnvironmentConfig[K] {
   return envSecurity.get(key);
+}
+
+/**
+ * Get any environment variable as a string (for keys not in EnvironmentConfig)
+ */
+export function getEnvVarString(key: string): string | undefined {
+  const value = process.env[key];
+  if (value === undefined || value === null) return undefined;
+  return String(value);
 }
 
 export function hasEnvVar(key: keyof EnvironmentConfig): boolean {

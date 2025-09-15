@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { getEnvVar } from '../../lib/env-security';
 import { log } from '../../lib/log';
+import crypto from 'crypto';
 
 /**
  * Security Headers Configuration Interface
@@ -66,8 +67,8 @@ const DEFAULT_CONFIG: SecurityHeadersConfig = {
     enabled: true,
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"], // Removed 'unsafe-inline' and 'unsafe-eval' for security
+      styleSrc: ["'self'"], // Removed 'unsafe-inline' for security
       imgSrc: ["'self'", "data:", "https:"],
       fontSrc: ["'self'", "data:"],
       connectSrc: ["'self'"],
@@ -131,13 +132,22 @@ function getEnvironmentConfig(): SecurityHeadersConfig {
 }
 
 /**
+ * Generate a CSP nonce
+ */
+function generateCSPNonce(): string {
+  return crypto.randomBytes(16).toString('base64');
+}
+
+/**
  * Build Content Security Policy header value
  */
-function buildCSPHeader(csp: SecurityHeadersConfig['csp']): string {
+function buildCSPHeader(csp: SecurityHeadersConfig['csp'], nonce?: string): string {
   if (!csp || !csp.directives) return '';
 
   const cspParts: string[] = [];
   const directives = csp.directives;
+  const nodeEnv = getEnvVar('NODE_ENV') || 'development';
+  const isProduction = nodeEnv === 'production';
 
   // Map directive names to CSP names
   const directiveMap: Record<string, string> = {
@@ -159,7 +169,20 @@ function buildCSPHeader(csp: SecurityHeadersConfig['csp']): string {
   Object.entries(directiveMap).forEach(([key, cspName]) => {
     const values = directives[key as keyof typeof directives];
     if (Array.isArray(values) && values.length > 0) {
-      cspParts.push(`${cspName} ${values.join(' ')}`);
+      let directiveValues = [...values];
+
+      // In production, use nonces instead of unsafe-inline for script and style
+      if (isProduction && nonce) {
+        if (key === 'scriptSrc') {
+          directiveValues = directiveValues.filter(v => v !== "'unsafe-inline'" && v !== "'unsafe-eval'");
+          directiveValues.push(`'nonce-${nonce}'`);
+        } else if (key === 'styleSrc') {
+          directiveValues = directiveValues.filter(v => v !== "'unsafe-inline'");
+          directiveValues.push(`'nonce-${nonce}'`);
+        }
+      }
+
+      cspParts.push(`${cspName} ${directiveValues.join(' ')}`);
     }
   });
 
@@ -183,6 +206,13 @@ export function createSecurityHeadersMiddleware(customConfig?: Partial<SecurityH
 
       const nodeEnv = getEnvVar('NODE_ENV') || 'development';
       const isProduction = nodeEnv === 'production';
+
+      // Generate CSP nonce for production (makes it available to templates/client)
+      const cspNonce = isProduction ? generateCSPNonce() : undefined;
+      if (cspNonce) {
+        // Make nonce available to response locals for use in templates
+        res.locals.cspNonce = cspNonce;
+      }
 
       // X-Content-Type-Options: nosniff
       if (config.contentTypeOptions) {
@@ -208,7 +238,7 @@ export function createSecurityHeadersMiddleware(customConfig?: Partial<SecurityH
 
       // Content Security Policy
       if (config.csp?.enabled && config.csp.directives) {
-        const cspHeader = buildCSPHeader(config.csp);
+        const cspHeader = buildCSPHeader(config.csp, cspNonce);
         if (cspHeader) {
           res.setHeader('Content-Security-Policy', cspHeader);
         }

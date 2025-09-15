@@ -5,11 +5,18 @@ import chatRouter from "./routes/chat";
 import { getNow, setFreeze, getFreeze } from "./lib/clock";
 import { rateLimitedAuth, type AuthenticatedRequest } from "./middleware/auth";
 import { securityHeaders } from "./middleware/security-headers";
+import { cors } from "./middleware/cors";
+import { csrf } from "./middleware/csrf";
+import { requestLogging } from "./middleware/request-logging";
+import { tracingMiddleware } from "../lib/tracing/opentelemetry";
+import compression from "compression";
 import {
   inputValidation,
   strictInputValidation,
   validateContentType,
-  validateRequestSize
+  validateRequestSize,
+  sqlInjectionPrevention,
+  enhancedXSSPrevention
 } from "./middleware/input-validation";
 import {
   circuitBreakerMiddleware,
@@ -17,7 +24,13 @@ import {
   connectionMonitoringMiddleware,
   getCircuitBreakerStatus
 } from "./middleware/error-handling";
-import { getEnvVar } from '../lib/env-security';
+import {
+  loadBalancerMiddleware,
+  connectionPoolMiddleware,
+  getLoadBalancerStatus
+} from "./middleware/load-balancer";
+import { getEnvVar, getEnvVarString } from '../lib/env-security';
+import { log } from '../lib/log';
 
 // Extend Express Request to include session
 declare module 'express-session' {
@@ -27,15 +40,55 @@ declare module 'express-session' {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Apply connection monitoring first
+  // Apply request logging first to capture all requests
+  app.use(requestLogging);
+
+  // Apply tracing middleware
+  app.use(tracingMiddleware());
+
+  // Apply connection monitoring
   app.use(connectionMonitoringMiddleware());
-  
+
   // Apply request timeout middleware
   app.use(requestTimeoutMiddleware(30000)); // 30 second timeout
-  
+
   // Apply security headers to all routes
   app.use(securityHeaders);
-  
+
+  // Apply input validation to all routes
+  app.use(inputValidation);
+
+  // Apply content type validation for POST/PUT/PATCH requests
+  app.use(validateContentType(['application/json', 'text/plain']));
+
+  // Apply request size validation
+  app.use(validateRequestSize(2 * 1024 * 1024)); // 2MB limit
+
+  // Apply load balancer for high concurrency handling
+  app.use(loadBalancerMiddleware());
+
+  // Apply enhanced connection pooling for high concurrency
+  app.use(connectionPoolMiddleware(200));
+
+  // Apply compression middleware for API responses
+  app.use('/api', compression({
+    level: 6, // Good balance between speed and compression
+    threshold: 1024, // Only compress responses larger than 1KB
+    filter: (req, res) => {
+      // Don't compress responses that are already compressed
+      if (res.getHeader('Content-Encoding')) {
+        return false;
+      }
+      return compression.filter(req, res);
+    }
+  }));
+
+  // Apply CORS middleware only to valid API routes (not to 404s)
+  // This will be applied after route matching
+
+  // Apply CSRF protection to state-changing routes
+  app.use('/api', csrf);
+
   // Apply input validation to all routes
   app.use(inputValidation);
   
@@ -52,14 +105,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // prefix all routes with /api
   
   // Add chat route for AI business assistant
-  app.use("/api", chatRouter);
+  app.use("/api", cors, chatRouter);
 
   // Add performance monitoring routes
   const performanceRouter = await import("./routes/performance");
-  app.use("/api/performance", performanceRouter.default);
+  app.use("/api/performance", cors, performanceRouter.default);
 
   // Map services to expected types for tests
-  app.get("/api/services", async (_req, res) => {
+  app.get("/api/services", cors, rateLimitedAuth, sqlInjectionPrevention, async (_req, res) => {
     try {
       const services = await storage.getAllServices();
       res.json(services.map(mapService));
@@ -69,7 +122,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/services/:id", async (req, res) => {
+  app.get("/api/services/:id", cors, rateLimitedAuth, sqlInjectionPrevention, async (req, res) => {
     try {
       const service = await storage.getService(req.params.id);
       if (!service) return res.status(404).json({ message: "Service not found" });
@@ -77,6 +130,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error getting service:", error);
       res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Readiness probe - checks if service is ready to serve traffic
+  app.get("/readyz", async (req, res) => {
+    try {
+      const checks = {
+        database: false,
+        connectionPool: false,
+        timestamp: new Date().toISOString()
+      };
+
+      // Check database connectivity
+      try {
+        const { connectionPool } = await import('../lib/db/connection-pool');
+        const poolStatus = connectionPool.getStatus();
+        checks.database = poolStatus.healthy;
+        checks.connectionPool = poolStatus.healthy && poolStatus.poolUtilization < 95;
+      } catch (error) {
+        log('Readiness check failed: database', { error: error instanceof Error ? error.message : String(error) });
+      }
+
+      const allChecksPass = checks.database && checks.connectionPool;
+
+      if (allChecksPass) {
+        res.status(200).json({
+          status: "ready",
+          checks,
+          message: "Service is ready to serve traffic"
+        });
+      } else {
+        res.status(503).json({
+          status: "not ready",
+          checks,
+          message: "Service is not ready to serve traffic"
+        });
+      }
+    } catch (error) {
+      log('Readiness probe error', { error: error instanceof Error ? error.message : String(error) });
+      res.status(503).json({
+        status: "error",
+        message: "Readiness check failed",
+        timestamp: new Date().toISOString()
+      });
     }
   });
 
@@ -219,7 +316,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Demo scenario reseed endpoint (for demos only) - requires authentication
-  app.post("/api/demo/seed", rateLimitedAuth, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/demo/seed", strictInputValidation, enhancedXSSPrevention, sqlInjectionPrevention, rateLimitedAuth, async (req: AuthenticatedRequest, res) => {
     try {
       const scenario = String((req.query.scenario as string) || req.body?.scenario || 'default');
       const seed = req.query.seed ? parseInt(req.query.seed as string, 10) : (req.body?.seed as number | undefined);
@@ -232,7 +329,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Business Profile endpoints
-  app.get("/api/profile", async (req, res) => {
+  app.get("/api/profile", rateLimitedAuth, async (req, res) => {
     try {
       const profile = await storage.getBusinessProfile();
       if (!profile) {
@@ -245,32 +342,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Services endpoints
-  app.get("/api/services", async (req, res) => {
-    try {
-      const services = await storage.getAllServices();
-      res.json(services);
-    } catch (error) {
-      console.error("Error getting services:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
+  // Services endpoints (remove duplicate - already defined above)
+  // app.get("/api/services", async (req, res) => {
+  //   try {
+  //     const services = await storage.getAllServices();
+  //     res.json(services);
+  //   } catch (error) {
+  //     console.error("Error getting services:", error);
+  //     res.status(500).json({ message: "Internal server error" });
+  //   }
+  // });
 
-  app.get("/api/services/:id", async (req, res) => {
-    try {
-      const service = await storage.getService(req.params.id);
-      if (!service) {
-        return res.status(404).json({ message: "Service not found" });
-      }
-      res.json(service);
-    } catch (error) {
-      console.error("Error getting service:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
+  // app.get("/api/services/:id", async (req, res) => {
+  //   try {
+  //     const service = await storage.getService(req.params.id);
+  //     if (!service) {
+  //       return res.status(404).json({ message: "Service not found" });
+  //     }
+  //     res.json(service);
+  //   } catch (error) {
+  //     console.error("Error getting service:", error);
+  //     res.status(500).json({ message: "Internal server error" });
+  //   }
+  // });
 
   // Staff endpoints
-  app.get("/api/staff", async (req, res) => {
+  app.get("/api/staff", cors, rateLimitedAuth, async (req, res) => {
     try {
       const staff = await storage.getAllStaff();
       res.json(staff);
@@ -280,7 +377,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/staff/:id", async (req, res) => {
+  app.get("/api/staff/:id", rateLimitedAuth, async (req, res) => {
     try {
       const staffMember = await storage.getStaff(req.params.id);
       if (!staffMember) {
@@ -294,7 +391,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Customer endpoints (limited for privacy)
-  app.get("/api/customers", async (req, res) => {
+  app.get("/api/customers", cors, rateLimitedAuth, sqlInjectionPrevention, async (req, res) => {
     try {
       const customers = await storage.getAllCustomers();
       // Return limited customer data for privacy
@@ -370,10 +467,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   // Appointments endpoints
-  app.get("/api/appointments", async (req, res) => {
+  app.get("/api/appointments", rateLimitedAuth, async (req, res) => {
     try {
       let appointments;
-      
+
       // Check for day filter
       if (req.query.day === 'today') {
         appointments = await storage.getAppointmentsByDay(getNow());
@@ -386,7 +483,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         appointments = await storage.getAllAppointments();
       }
-      
+
       res.json(appointments.map(mapAppointment));
     } catch (error) {
       console.error("Error getting appointments:", error);
@@ -395,7 +492,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Analytics export (CSV)
-  app.get("/api/analytics/export", async (_req, res) => {
+  app.get("/api/analytics/export", rateLimitedAuth, async (_req, res) => {
     try {
       const analytics = await storage.getAllAnalytics();
       const header = [
@@ -424,7 +521,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Demo time controls - requires authentication
-  app.post("/api/demo/time", rateLimitedAuth, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/demo/time", strictInputValidation, enhancedXSSPrevention, sqlInjectionPrevention, rateLimitedAuth, async (req: AuthenticatedRequest, res) => {
     try {
       const clear = req.query.clear === '1' || (req.body && req.body.clear === true);
       if (clear) {
@@ -442,7 +539,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Reset demo to defaults (clear freeze, default scenario/seed) - requires authentication
-  app.post("/api/demo/reset", rateLimitedAuth, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/demo/reset", strictInputValidation, enhancedXSSPrevention, sqlInjectionPrevention, rateLimitedAuth, async (req: AuthenticatedRequest, res) => {
     try {
       setFreeze(null);
       await storage.seedDemoData('default', undefined);
@@ -457,7 +554,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/appointments/:id", async (req, res) => {
+  app.get("/api/appointments/:id", rateLimitedAuth, async (req, res) => {
     try {
       const appointment = await storage.getAppointment(req.params.id);
       if (!appointment) {
@@ -471,7 +568,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Inventory endpoints
-  app.get("/api/inventory", async (req, res) => {
+  app.get("/api/inventory", rateLimitedAuth, async (req, res) => {
     try {
       const inventory = await storage.getAllInventoryItems();
       res.json(inventory.map(mapInventoryItem));
@@ -481,7 +578,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/inventory/:id", async (req, res) => {
+  app.get("/api/inventory/:id", rateLimitedAuth, async (req, res) => {
     try {
       const item = await storage.getInventoryItem(req.params.id);
       if (!item) {
@@ -495,7 +592,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Analytics endpoints
-  app.get("/api/analytics", async (req, res) => {
+  app.get("/api/analytics", rateLimitedAuth, async (req, res) => {
     try {
       const analytics = await storage.getAllAnalytics();
       res.json(analytics.map(mapAnalytics));
@@ -506,7 +603,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // POS endpoints
-  app.get("/api/pos/sales", async (_req, res) => {
+  app.get("/api/pos/sales", rateLimitedAuth, async (_req, res) => {
     try {
       const sales = await storage.getAllSales();
       res.json(sales);
@@ -517,7 +614,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // POS sales CSV export
-  app.get("/api/pos/sales/export", async (_req, res) => {
+  app.get("/api/pos/sales/export", rateLimitedAuth, async (_req, res) => {
     try {
       const sales = await storage.getAllSales();
       const header = [
@@ -542,7 +639,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/pos/sales", strictInputValidation, rateLimitedAuth, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/pos/sales", strictInputValidation, enhancedXSSPrevention, sqlInjectionPrevention, rateLimitedAuth, async (req: AuthenticatedRequest, res) => {
     try {
       let items = Array.isArray(req.body?.items) ? req.body.items : [];
       if (!items.length) return res.status(400).json({ message: 'No items provided' });
@@ -577,7 +674,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/pos/sales/:id", rateLimitedAuth, async (req: AuthenticatedRequest, res) => {
+  app.delete("/api/pos/sales/:id", strictInputValidation, enhancedXSSPrevention, sqlInjectionPrevention, rateLimitedAuth, async (req: AuthenticatedRequest, res) => {
     try {
       const ok = await storage.deleteSale(req.params.id);
       if (!ok) return res.status(404).json({ message: 'Sale not found' });
@@ -589,7 +686,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Marketing endpoints
-  app.get("/api/marketing/campaigns", async (_req, res) => {
+  app.get("/api/marketing/campaigns", cors, rateLimitedAuth, sqlInjectionPrevention, async (_req, res) => {
     try {
       const campaigns = await storage.getAllCampaigns();
       res.json(campaigns);
@@ -599,7 +696,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/marketing/campaigns", strictInputValidation, rateLimitedAuth, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/marketing/campaigns", strictInputValidation, enhancedXSSPrevention, sqlInjectionPrevention, rateLimitedAuth, async (req: AuthenticatedRequest, res) => {
     try {
       const { name, description, channel, status } = req.body || {};
       if (!name || typeof name !== 'string') return res.status(400).json({ message: 'Name is required' });
@@ -611,7 +708,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/marketing/campaigns/:id", strictInputValidation, rateLimitedAuth, async (req: AuthenticatedRequest, res) => {
+  app.patch("/api/marketing/campaigns/:id", strictInputValidation, enhancedXSSPrevention, sqlInjectionPrevention, rateLimitedAuth, async (req: AuthenticatedRequest, res) => {
     try {
       const { status, name, description, channel } = req.body || {};
       const updated = await storage.updateCampaign(req.params.id, { status, name, description, channel });
@@ -624,7 +721,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Marketing performance (mock metrics derived deterministically)
-  app.get("/api/marketing/performance", async (_req, res) => {
+  app.get("/api/marketing/performance", cors, rateLimitedAuth, sqlInjectionPrevention, async (_req, res) => {
     try {
       const campaigns = await storage.getAllCampaigns();
       const hashToFloat = (s: string): number => {
@@ -667,7 +764,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Loyalty endpoints
-  app.get("/api/loyalty/entries", async (req, res) => {
+  app.get("/api/loyalty/entries", rateLimitedAuth, async (req, res) => {
     try {
       const customerId = typeof req.query.customerId === 'string' ? req.query.customerId : undefined;
       const entries = await storage.getLoyaltyEntries(customerId);
@@ -679,7 +776,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Loyalty CSV export
-  app.get("/api/loyalty/entries/export", async (_req, res) => {
+  app.get("/api/loyalty/entries/export", rateLimitedAuth, async (_req, res) => {
     try {
       const entries = await storage.getLoyaltyEntries();
       const header = ['id','customerId','type','points','note','createdAt'];
@@ -701,7 +798,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/loyalty/entries", strictInputValidation, rateLimitedAuth, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/loyalty/entries", strictInputValidation, enhancedXSSPrevention, sqlInjectionPrevention, rateLimitedAuth, async (req: AuthenticatedRequest, res) => {
     try {
       const { customerId, type, points, note } = req.body || {};
       if (!customerId || !type) return res.status(400).json({ message: 'customerId and type are required' });
@@ -713,7 +810,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/analytics/:id", async (req, res) => {
+  app.get("/api/analytics/:id", rateLimitedAuth, async (req, res) => {
     try {
       const analyticsData = await storage.getAnalytics(req.params.id);
       if (!analyticsData) {
@@ -724,6 +821,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error getting analytics data:", error);
       res.status(500).json({ message: "Internal server error" });
     }
+  });
+
+  // API 404 handler - must come before catch-all routes
+  // This prevents undefined API endpoints from serving HTML pages
+  app.use('/api/*', (req, res) => {
+    log('API endpoint not found', {
+      method: req.method,
+      path: req.path,
+      ip: req.ip,
+      userAgent: req.get('User-Agent'),
+      timestamp: new Date().toISOString()
+    });
+    
+    res.status(404).json({
+      message: 'API endpoint not found',
+      error: 'ENDPOINT_NOT_FOUND',
+      path: req.path,
+      method: req.method
+    });
   });
 
   const httpServer = createServer(app);

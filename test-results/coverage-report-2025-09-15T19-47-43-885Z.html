@@ -1,0 +1,504 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Coverage Report - 2025-09-15T19:47:43.890Z</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f8fafc; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0; }
+        .metric-card { background: #f9fafb; padding: 15px; border-radius: 6px; border-left: 4px solid #e5e7eb; }
+        .metric-value { font-size: 1.5em; font-weight: bold; margin-bottom: 5px; }
+        .metric-label { color: #6b7280; font-size: 0.9em; }
+        .coverage-bar { background: #e5e7eb; height: 20px; border-radius: 10px; overflow: hidden; margin: 10px 0; }
+        .coverage-fill { height: 100%; transition: width 0.3s ease; }
+        .coverage-good { background: #22c55e; }
+        .coverage-warning { background: #f59e0b; }
+        .coverage-critical { background: #ef4444; }
+        .status-covered { color: #22c55e; font-weight: bold; }
+        .status-partial { color: #f59e0b; font-weight: bold; }
+        .status-missing { color: #ef4444; font-weight: bold; }
+        .table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .table th, .table td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        .table th { background: #f9fafb; font-weight: 600; }
+        .recommendations { background: #fef3c7; border: 1px solid #f59e0b; padding: 20px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Test Coverage Report</h1>
+            <p><strong>Generated:</strong> 2025-09-15T19:47:43.890Z</p>
+            <p><strong>Overall Score:</strong> 97.1%</p>
+        </div>
+
+        <div class="section">
+            <h2>Overall Coverage Metrics</h2>
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <div class="metric-value">100.0%</div>
+                    <div class="metric-label">Test Execution Rate</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">95.9%</div>
+                    <div class="metric-label">Test Pass Rate</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">49</div>
+                    <div class="metric-label">Total Tests</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">47</div>
+                    <div class="metric-label">Passed Tests</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Coverage by Test Suite Type</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Suite Type</th>
+                        <th>Tests</th>
+                        <th>Expected</th>
+                        <th>Coverage</th>
+                        <th>Pass Rate</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <td>functional</td>
+                        <td>20</td>
+                        <td>50</td>
+                        <td>
+                            <div class="coverage-bar">
+                                <div class="coverage-fill coverage-critical" 
+                                     style="width: 40%"></div>
+                            </div>
+                            40.0%
+                        </td>
+                        <td>100.0%</td>
+                        <td>76.0%</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>performance</td>
+                        <td>29</td>
+                        <td>20</td>
+                        <td>
+                            <div class="coverage-bar">
+                                <div class="coverage-fill coverage-good" 
+                                     style="width: 145%"></div>
+                            </div>
+                            145.0%
+                        </td>
+                        <td>93.1%</td>
+                        <td>100.0%</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>security</td>
+                        <td>0</td>
+                        <td>15</td>
+                        <td>
+                            <div class="coverage-bar">
+                                <div class="coverage-fill coverage-critical" 
+                                     style="width: 0%"></div>
+                            </div>
+                            0.0%
+                        </td>
+                        <td>0.0%</td>
+                        <td>0.0%</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>deployment</td>
+                        <td>0</td>
+                        <td>10</td>
+                        <td>
+                            <div class="coverage-bar">
+                                <div class="coverage-fill coverage-critical" 
+                                     style="width: 0%"></div>
+                            </div>
+                            0.0%
+                        </td>
+                        <td>0.0%</td>
+                        <td>0.0%</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>uat</td>
+                        <td>0</td>
+                        <td>25</td>
+                        <td>
+                            <div class="coverage-bar">
+                                <div class="coverage-fill coverage-critical" 
+                                     style="width: 0%"></div>
+                            </div>
+                            0.0%
+                        </td>
+                        <td>0.0%</td>
+                        <td>0.0%</td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>API Endpoint Coverage</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Endpoint</th>
+                        <th>Status</th>
+                        <th>Test Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <td>GET</td>
+                        <td>/api/health</td>
+                        <td class="status-covered">COVERED</td>
+                        <td>1</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>GET</td>
+                        <td>/api/profile</td>
+                        <td class="status-missing">MISSING</td>
+                        <td>0</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>GET</td>
+                        <td>/api/services</td>
+                        <td class="status-covered">COVERED</td>
+                        <td>1</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>POST</td>
+                        <td>/api/services</td>
+                        <td class="status-partial">PARTIAL</td>
+                        <td>0</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>PUT</td>
+                        <td>/api/services/:id</td>
+                        <td class="status-partial">PARTIAL</td>
+                        <td>0</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>DELETE</td>
+                        <td>/api/services/:id</td>
+                        <td class="status-partial">PARTIAL</td>
+                        <td>0</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>GET</td>
+                        <td>/api/staff</td>
+                        <td class="status-covered">COVERED</td>
+                        <td>1</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>POST</td>
+                        <td>/api/staff</td>
+                        <td class="status-partial">PARTIAL</td>
+                        <td>0</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>PUT</td>
+                        <td>/api/staff/:id</td>
+                        <td class="status-partial">PARTIAL</td>
+                        <td>0</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>DELETE</td>
+                        <td>/api/staff/:id</td>
+                        <td class="status-partial">PARTIAL</td>
+                        <td>0</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>GET</td>
+                        <td>/api/customers</td>
+                        <td class="status-covered">COVERED</td>
+                        <td>1</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>POST</td>
+                        <td>/api/customers</td>
+                        <td class="status-partial">PARTIAL</td>
+                        <td>0</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>PUT</td>
+                        <td>/api/customers/:id</td>
+                        <td class="status-partial">PARTIAL</td>
+                        <td>0</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>DELETE</td>
+                        <td>/api/customers/:id</td>
+                        <td class="status-partial">PARTIAL</td>
+                        <td>0</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>GET</td>
+                        <td>/api/appointments</td>
+                        <td class="status-covered">COVERED</td>
+                        <td>1</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>POST</td>
+                        <td>/api/appointments</td>
+                        <td class="status-partial">PARTIAL</td>
+                        <td>0</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>PUT</td>
+                        <td>/api/appointments/:id</td>
+                        <td class="status-partial">PARTIAL</td>
+                        <td>0</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>DELETE</td>
+                        <td>/api/appointments/:id</td>
+                        <td class="status-partial">PARTIAL</td>
+                        <td>0</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>GET</td>
+                        <td>/api/inventory</td>
+                        <td class="status-covered">COVERED</td>
+                        <td>1</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>POST</td>
+                        <td>/api/inventory</td>
+                        <td class="status-partial">PARTIAL</td>
+                        <td>0</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>PUT</td>
+                        <td>/api/inventory/:id</td>
+                        <td class="status-partial">PARTIAL</td>
+                        <td>0</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>DELETE</td>
+                        <td>/api/inventory/:id</td>
+                        <td class="status-partial">PARTIAL</td>
+                        <td>0</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>GET</td>
+                        <td>/api/analytics</td>
+                        <td class="status-covered">COVERED</td>
+                        <td>1</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>GET</td>
+                        <td>/api/pos/sales</td>
+                        <td class="status-covered">COVERED</td>
+                        <td>1</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>POST</td>
+                        <td>/api/pos/sales</td>
+                        <td class="status-partial">PARTIAL</td>
+                        <td>0</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>GET</td>
+                        <td>/api/marketing/campaigns</td>
+                        <td class="status-covered">COVERED</td>
+                        <td>1</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>POST</td>
+                        <td>/api/marketing/campaigns</td>
+                        <td class="status-partial">PARTIAL</td>
+                        <td>0</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>PUT</td>
+                        <td>/api/marketing/campaigns/:id</td>
+                        <td class="status-partial">PARTIAL</td>
+                        <td>0</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>GET</td>
+                        <td>/api/loyalty/entries</td>
+                        <td class="status-covered">COVERED</td>
+                        <td>1</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>POST</td>
+                        <td>/api/loyalty/entries</td>
+                        <td class="status-partial">PARTIAL</td>
+                        <td>0</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>POST</td>
+                        <td>/api/chat</td>
+                        <td class="status-covered">COVERED</td>
+                        <td>1</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>GET</td>
+                        <td>/api/csv-export/:type</td>
+                        <td class="status-covered">COVERED</td>
+                        <td>1</td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Feature Coverage</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Module</th>
+                        <th>Critical</th>
+                        <th>Status</th>
+                        <th>Test Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <td>User Authentication</td>
+                        <td>auth</td>
+                        <td>Yes</td>
+                        <td class="status-missing">MISSING</td>
+                        <td>0</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>POS Transactions</td>
+                        <td>pos</td>
+                        <td>Yes</td>
+                        <td class="status-covered">COVERED</td>
+                        <td>3</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>Inventory Management</td>
+                        <td>inventory</td>
+                        <td>Yes</td>
+                        <td class="status-covered">COVERED</td>
+                        <td>3</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>Staff Scheduling</td>
+                        <td>scheduling</td>
+                        <td>Yes</td>
+                        <td class="status-partial">PARTIAL</td>
+                        <td>1</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>Customer Management</td>
+                        <td>customers</td>
+                        <td>Yes</td>
+                        <td class="status-partial">PARTIAL</td>
+                        <td>2</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>Marketing Campaigns</td>
+                        <td>marketing</td>
+                        <td>No</td>
+                        <td class="status-covered">COVERED</td>
+                        <td>3</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>Loyalty Program</td>
+                        <td>loyalty</td>
+                        <td>No</td>
+                        <td class="status-covered">COVERED</td>
+                        <td>3</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>Analytics Dashboard</td>
+                        <td>analytics</td>
+                        <td>No</td>
+                        <td class="status-covered">COVERED</td>
+                        <td>3</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>AI Chat Assistant</td>
+                        <td>chat</td>
+                        <td>No</td>
+                        <td class="status-partial">PARTIAL</td>
+                        <td>2</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>Data Export</td>
+                        <td>export</td>
+                        <td>No</td>
+                        <td class="status-partial">PARTIAL</td>
+                        <td>1</td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+        </div>
+
+        
+        <div class="recommendations">
+            <h3>Coverage Recommendations</h3>
+            <ul>
+                <li>Missing test suites: security, deployment, uat. Consider implementing these test types.</li><li>Missing API endpoint tests: GET /api/profile.</li><li>Critical features without tests: User Authentication. These are essential for production readiness.</li><li>Features with partial test coverage: Staff Scheduling, Customer Management, AI Chat Assistant, Data Export. Consider adding more comprehensive tests.</li>
+            </ul>
+        </div>
+        
+    </div>
+</body>
+</html>

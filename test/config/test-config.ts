@@ -124,8 +124,10 @@ export const defaultTestConfig: TestConfig = {
     portFile: '.local/test_port',
     env: {
       NODE_ENV: 'production',
+      SMOKE_MODE: '1', // Enable demo data seeding for tests
       ADMIN_TOKEN: 'test-admin-token-12345-secure',
-      SKIP_RATE_LIMIT: 'true' // Skip rate limiting in tests to avoid interference
+      SKIP_RATE_LIMIT: 'true', // Skip rate limiting in tests to avoid interference
+      CORS_ORIGINS: '["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5173", "http://127.0.0.1:5173"]' // Allow test origins
     }
   }
 };

@@ -1,0 +1,421 @@
+{
+  "timestamp": "2025-09-15T19:28:24.321Z",
+  "overallCoverage": {
+    "totalTests": 49,
+    "executedTests": 49,
+    "passedTests": 47,
+    "failedTests": 2,
+    "skippedTests": 0,
+    "executionRate": 100,
+    "passRate": 95.91836734693877,
+    "overallScore": 97.14285714285714
+  },
+  "suiteTypeCoverage": [
+    {
+      "suiteType": "functional",
+      "metrics": {
+        "totalTests": 20,
+        "executedTests": 20,
+        "passedTests": 20,
+        "failedTests": 0,
+        "skippedTests": 0,
+        "executionRate": 40,
+        "passRate": 100,
+        "overallScore": 76
+      },
+      "expectedTests": 50,
+      "actualTests": 20,
+      "coverageGap": 30
+    },
+    {
+      "suiteType": "performance",
+      "metrics": {
+        "totalTests": 29,
+        "executedTests": 29,
+        "passedTests": 27,
+        "failedTests": 2,
+        "skippedTests": 0,
+        "executionRate": 145,
+        "passRate": 93.10344827586206,
+        "overallScore": 100
+      },
+      "expectedTests": 20,
+      "actualTests": 29,
+      "coverageGap": 0
+    },
+    {
+      "suiteType": "security",
+      "metrics": {
+        "totalTests": 0,
+        "executedTests": 0,
+        "passedTests": 0,
+        "failedTests": 0,
+        "skippedTests": 0,
+        "executionRate": 0,
+        "passRate": 0,
+        "overallScore": 0
+      },
+      "expectedTests": 15,
+      "actualTests": 0,
+      "coverageGap": 15
+    },
+    {
+      "suiteType": "deployment",
+      "metrics": {
+        "totalTests": 0,
+        "executedTests": 0,
+        "passedTests": 0,
+        "failedTests": 0,
+        "skippedTests": 0,
+        "executionRate": 0,
+        "passRate": 0,
+        "overallScore": 0
+      },
+      "expectedTests": 10,
+      "actualTests": 0,
+      "coverageGap": 10
+    },
+    {
+      "suiteType": "uat",
+      "metrics": {
+        "totalTests": 0,
+        "executedTests": 0,
+        "passedTests": 0,
+        "failedTests": 0,
+        "skippedTests": 0,
+        "executionRate": 0,
+        "passRate": 0,
+        "overallScore": 0
+      },
+      "expectedTests": 25,
+      "actualTests": 0,
+      "coverageGap": 25
+    }
+  ],
+  "endpointCoverage": [
+    {
+      "endpoint": "/api/health",
+      "method": "GET",
+      "tested": true,
+      "testCount": 1,
+      "lastTested": "2025-09-15T19:28:24.314Z",
+      "status": "covered"
+    },
+    {
+      "endpoint": "/api/profile",
+      "method": "GET",
+      "tested": false,
+      "testCount": 0,
+      "status": "missing"
+    },
+    {
+      "endpoint": "/api/services",
+      "method": "GET",
+      "tested": true,
+      "testCount": 1,
+      "lastTested": "2025-09-15T19:28:24.314Z",
+      "status": "covered"
+    },
+    {
+      "endpoint": "/api/services",
+      "method": "POST",
+      "tested": false,
+      "testCount": 0,
+      "status": "partial"
+    },
+    {
+      "endpoint": "/api/services/:id",
+      "method": "PUT",
+      "tested": false,
+      "testCount": 0,
+      "status": "partial"
+    },
+    {
+      "endpoint": "/api/services/:id",
+      "method": "DELETE",
+      "tested": false,
+      "testCount": 0,
+      "status": "partial"
+    },
+    {
+      "endpoint": "/api/staff",
+      "method": "GET",
+      "tested": true,
+      "testCount": 1,
+      "lastTested": "2025-09-15T19:28:24.314Z",
+      "status": "covered"
+    },
+    {
+      "endpoint": "/api/staff",
+      "method": "POST",
+      "tested": false,
+      "testCount": 0,
+      "status": "partial"
+    },
+    {
+      "endpoint": "/api/staff/:id",
+      "method": "PUT",
+      "tested": false,
+      "testCount": 0,
+      "status": "partial"
+    },
+    {
+      "endpoint": "/api/staff/:id",
+      "method": "DELETE",
+      "tested": false,
+      "testCount": 0,
+      "status": "partial"
+    },
+    {
+      "endpoint": "/api/customers",
+      "method": "GET",
+      "tested": true,
+      "testCount": 1,
+      "lastTested": "2025-09-15T19:28:24.314Z",
+      "status": "covered"
+    },
+    {
+      "endpoint": "/api/customers",
+      "method": "POST",
+      "tested": false,
+      "testCount": 0,
+      "status": "partial"
+    },
+    {
+      "endpoint": "/api/customers/:id",
+      "method": "PUT",
+      "tested": false,
+      "testCount": 0,
+      "status": "partial"
+    },
+    {
+      "endpoint": "/api/customers/:id",
+      "method": "DELETE",
+      "tested": false,
+      "testCount": 0,
+      "status": "partial"
+    },
+    {
+      "endpoint": "/api/appointments",
+      "method": "GET",
+      "tested": true,
+      "testCount": 1,
+      "lastTested": "2025-09-15T19:28:24.314Z",
+      "status": "covered"
+    },
+    {
+      "endpoint": "/api/appointments",
+      "method": "POST",
+      "tested": false,
+      "testCount": 0,
+      "status": "partial"
+    },
+    {
+      "endpoint": "/api/appointments/:id",
+      "method": "PUT",
+      "tested": false,
+      "testCount": 0,
+      "status": "partial"
+    },
+    {
+      "endpoint": "/api/appointments/:id",
+      "method": "DELETE",
+      "tested": false,
+      "testCount": 0,
+      "status": "partial"
+    },
+    {
+      "endpoint": "/api/inventory",
+      "method": "GET",
+      "tested": true,
+      "testCount": 1,
+      "lastTested": "2025-09-15T19:28:24.314Z",
+      "status": "covered"
+    },
+    {
+      "endpoint": "/api/inventory",
+      "method": "POST",
+      "tested": false,
+      "testCount": 0,
+      "status": "partial"
+    },
+    {
+      "endpoint": "/api/inventory/:id",
+      "method": "PUT",
+      "tested": false,
+      "testCount": 0,
+      "status": "partial"
+    },
+    {
+      "endpoint": "/api/inventory/:id",
+      "method": "DELETE",
+      "tested": false,
+      "testCount": 0,
+      "status": "partial"
+    },
+    {
+      "endpoint": "/api/analytics",
+      "method": "GET",
+      "tested": true,
+      "testCount": 1,
+      "lastTested": "2025-09-15T19:28:24.314Z",
+      "status": "covered"
+    },
+    {
+      "endpoint": "/api/pos/sales",
+      "method": "GET",
+      "tested": true,
+      "testCount": 1,
+      "lastTested": "2025-09-15T19:28:24.314Z",
+      "status": "covered"
+    },
+    {
+      "endpoint": "/api/pos/sales",
+      "method": "POST",
+      "tested": false,
+      "testCount": 0,
+      "status": "partial"
+    },
+    {
+      "endpoint": "/api/marketing/campaigns",
+      "method": "GET",
+      "tested": true,
+      "testCount": 1,
+      "lastTested": "2025-09-15T19:28:24.314Z",
+      "status": "covered"
+    },
+    {
+      "endpoint": "/api/marketing/campaigns",
+      "method": "POST",
+      "tested": false,
+      "testCount": 0,
+      "status": "partial"
+    },
+    {
+      "endpoint": "/api/marketing/campaigns/:id",
+      "method": "PUT",
+      "tested": false,
+      "testCount": 0,
+      "status": "partial"
+    },
+    {
+      "endpoint": "/api/loyalty/entries",
+      "method": "GET",
+      "tested": true,
+      "testCount": 1,
+      "lastTested": "2025-09-15T19:28:24.314Z",
+      "status": "covered"
+    },
+    {
+      "endpoint": "/api/loyalty/entries",
+      "method": "POST",
+      "tested": false,
+      "testCount": 0,
+      "status": "partial"
+    },
+    {
+      "endpoint": "/api/chat",
+      "method": "POST",
+      "tested": true,
+      "testCount": 1,
+      "lastTested": "2025-09-15T19:28:24.314Z",
+      "status": "covered"
+    },
+    {
+      "endpoint": "/api/csv-export/:type",
+      "method": "GET",
+      "tested": true,
+      "testCount": 1,
+      "lastTested": "2025-09-15T19:28:24.314Z",
+      "status": "covered"
+    }
+  ],
+  "featureCoverage": [
+    {
+      "feature": "User Authentication",
+      "module": "auth",
+      "tested": false,
+      "testCount": 0,
+      "criticalPath": true,
+      "status": "missing"
+    },
+    {
+      "feature": "POS Transactions",
+      "module": "pos",
+      "tested": true,
+      "testCount": 3,
+      "criticalPath": true,
+      "status": "covered"
+    },
+    {
+      "feature": "Inventory Management",
+      "module": "inventory",
+      "tested": true,
+      "testCount": 3,
+      "criticalPath": true,
+      "status": "covered"
+    },
+    {
+      "feature": "Staff Scheduling",
+      "module": "scheduling",
+      "tested": true,
+      "testCount": 1,
+      "criticalPath": true,
+      "status": "partial"
+    },
+    {
+      "feature": "Customer Management",
+      "module": "customers",
+      "tested": true,
+      "testCount": 2,
+      "criticalPath": true,
+      "status": "partial"
+    },
+    {
+      "feature": "Marketing Campaigns",
+      "module": "marketing",
+      "tested": true,
+      "testCount": 3,
+      "criticalPath": false,
+      "status": "covered"
+    },
+    {
+      "feature": "Loyalty Program",
+      "module": "loyalty",
+      "tested": true,
+      "testCount": 3,
+      "criticalPath": false,
+      "status": "covered"
+    },
+    {
+      "feature": "Analytics Dashboard",
+      "module": "analytics",
+      "tested": true,
+      "testCount": 3,
+      "criticalPath": false,
+      "status": "covered"
+    },
+    {
+      "feature": "AI Chat Assistant",
+      "module": "chat",
+      "tested": true,
+      "testCount": 2,
+      "criticalPath": false,
+      "status": "partial"
+    },
+    {
+      "feature": "Data Export",
+      "module": "export",
+      "tested": true,
+      "testCount": 1,
+      "criticalPath": false,
+      "status": "partial"
+    }
+  ],
+  "recommendations": [
+    "Missing test suites: security, deployment, uat. Consider implementing these test types.",
+    "Missing API endpoint tests: GET /api/profile.",
+    "Critical features without tests: User Authentication. These are essential for production readiness.",
+    "Features with partial test coverage: Staff Scheduling, Customer Management, AI Chat Assistant, Data Export. Consider adding more comprehensive tests."
+  ]
+}

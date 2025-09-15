@@ -72,20 +72,37 @@ const XSS_PATTERNS = [
   // Data URLs with JavaScript
   /data:[\w/+]+;base64,[\w+/=]+/gi,
   
-  // Unicode and encoded attacks
+  // Unicode and encoded attacks - Enhanced
   /\\u[0-9a-fA-F]{4}/gi,
   /\\x[0-9a-fA-F]{2}/gi,
   /&#x?[0-9a-fA-F]+;?/gi,
-  
-  // Template literals and expressions
+  /%[0-9a-fA-F]{2}/gi, // URL encoding
+  /&#[0-9]+;?/gi, // Decimal HTML entities
+
+  // Template literals and expressions - Enhanced
   /\$\{[\s\S]*?\}/gi,
   /`[\s\S]*?`/gi,
-  
-  // Dangerous functions
+  /<%[\s\S]*?%>/gi, // ASP/JSP style
+  /\{[\s\S]*?\}/gi, // Generic template injection
+
+  // Dangerous functions - Enhanced
   /eval\s*\(/gi,
   /setTimeout\s*\(/gi,
   /setInterval\s*\(/gi,
   /Function\s*\(/gi,
+  /constructor\s*\(/gi, // Constructor abuse
+  /__proto__\s*[:=]/gi, // Prototype pollution
+  /prototype\s*[:=]/gi, // Prototype pollution
+
+  // Additional dangerous patterns
+  /alert\s*\(/gi,
+  /confirm\s*\(/gi,
+  /prompt\s*\(/gi,
+  /window\.location/gi,
+  /document\.cookie/gi,
+  /document\.write/gi,
+  /innerHTML\s*[:=]/gi,
+  /outerHTML\s*[:=]/gi,
   
   // Protocol handlers
   /livescript\s*:/gi,
@@ -96,28 +113,74 @@ const XSS_PATTERNS = [
  * Malicious payload patterns for detection
  */
 const MALICIOUS_PATTERNS = [
-  // SQL injection patterns
+  // SQL injection patterns - Enhanced and Comprehensive
   /(union\s+select|insert\s+into|delete\s+from|update\s+set|drop\s+table|create\s+table|alter\s+table|exec\s+|execute\s+)/gi,
   /('|;|--|\/\*|\*\/)/gi,
+  /(select\s+.*\s+from|where\s+.*\s*=|having\s+.*\s*=)/gi,
+  /(or\s+1\s*=\s*1|and\s+1\s*=\s*1|'\s+or\s+'1'\s*=\s*'1)/gi,
+  /(waitfor\s+delay|benchmark\s*\(|sleep\s*\()/gi,
+  // Additional SQL injection patterns
+  /(information_schema|sysobjects|syscolumns|database\(\)|user\(\)|version\(\))/gi,
+  /(1\s*=\s*1|1\s*=\s*0|'1'\s*=\s*'0'|admin\s*=\s*admin)/gi,
+  /(order\s+by\s+\d+|group\s+by\s+\d+|limit\s+\d+,\d*)/gi,
+  /(substring\s*\(|substring\s*\[|substr\s*\(|substr\s*\[)/gi,
+  /(convert\s*\(|cast\s*\()/gi,
+  /(@@version|@@servername|@@spid)/gi,
+  // Time-based blind SQL injection
+  /(and\s+sleep\(|and\s+benchmark\(|and\s+pg_sleep\()/gi,
+  // Error-based SQL injection
+  /(and\s+1=convert\(|and\s+1=cast\()/gi,
+  // Out-of-band SQL injection
+  /(load_file\s*\(|into\s+outfile|into\s+dumpfile)/gi,
   
-  // Command injection patterns
+  // Command injection patterns - Enhanced
   /(\||&|;|\$\(|`|<|>)/gi,
+  /(nc\s+|netcat\s+|wget\s+|curl\s+|chmod\s+|rm\s+|mv\s+|cp\s+)/gi,
+  /(bash\s+|sh\s+|cmd\s+|powershell\s+|eval\s+)/gi,
   
-  // Path traversal patterns
+  // Path traversal patterns - Enhanced
   /(\.\.\/|\.\.\\|%2e%2e%2f|%2e%2e\\)/gi,
+  /(\/etc\/passwd|\/etc\/shadow|\.\.\/\.\.\/|\\\.\.\\\.\.\\)/gi,
+  /(file:\/\/|ftp:\/\/|gopher:\/\/)/gi,
   
   // Null byte injection
   // eslint-disable-next-line no-control-regex
   /\x00|\u0000|%00/gi,
   
-  // LDAP injection
+  // LDAP injection - Enhanced
   /(\*|\(|\)|\\|\||&)/gi,
+  /(\)\(\||&\(|\|\()/gi,
   
-  // XML injection
+  // XML injection - Enhanced
   /(<\?xml|<!DOCTYPE|<!ENTITY)/gi,
+  /(<!CDATA\[|]]>|&lt;|&gt;)/gi,
   
-  // Server-side template injection
+  // Server-side template injection - Enhanced
   /(\{\{|\}\}|\{%|%\}|\{#|#\})/gi,
+  /(\$\{.*\}|<%.*%>|#\{.*\})/gi,
+  
+  // NoSQL injection patterns
+  /(\$where|\$ne|\$gt|\$lt|\$regex|\$or|\$and)/gi,
+  /(this\..*==|function\s*\()/gi,
+  
+  // LDAP filter injection
+  /(\*\)|\(\*|\)\(|\|\|)/gi,
+  
+  // XPath injection
+  /(\[.*\]|\/\/|\/\*|\*\/)/gi,
+  
+  // Email header injection
+  /(\r\n|\n|\r|%0a|%0d)/gi,
+  /(bcc:|cc:|to:|from:|subject:)/gi,
+  
+  // HTTP header injection
+  /(\r\n\r\n|\n\n|%0d%0a%0d%0a)/gi,
+  
+  // Format string attacks
+  /(%s|%x|%d|%n|%p)/gi,
+  
+  // Buffer overflow patterns
+  /(A{100,}|1{100,}|0{100,})/gi,
 ];
 
 /**
@@ -260,6 +323,35 @@ export function inputValidation(req: SanitizedRequest, res: Response, next: Next
   try {
     const startTime = Date.now();
 
+    // Validate request structure first
+    if (req.body !== undefined && req.body !== null && typeof req.body !== 'object') {
+      log('Input validation error: Invalid body type', {
+        bodyType: typeof req.body,
+        path: req.path,
+        method: req.method
+      });
+      res.status(400).json({
+        message: 'Request body must be an object',
+        error: 'INVALID_BODY_TYPE'
+      });
+      return;
+    }
+
+    // Check for extremely large payloads before processing
+    const bodyString = req.body ? JSON.stringify(req.body) : '';
+    if (bodyString.length > 1024 * 1024) { // 1MB limit
+      log('Input validation error: Payload too large', {
+        size: bodyString.length,
+        path: req.path,
+        method: req.method
+      });
+      res.status(413).json({
+        message: 'Request payload too large',
+        error: 'PAYLOAD_TOO_LARGE'
+      });
+      return;
+    }
+
     // Sanitize request body
     if (req.body && typeof req.body === 'object') {
       req.sanitizedBody = sanitizeValue(req.body);
@@ -298,10 +390,11 @@ export function inputValidation(req: SanitizedRequest, res: Response, next: Next
     log('Input validation error', {
       error: error instanceof Error ? error.message : String(error),
       path: req.path,
-      method: req.method
+      method: req.method,
+      stack: error instanceof Error ? error.stack : undefined
     });
     
-    // On sanitization error, reject the request
+    // On sanitization error, reject the request securely
     res.status(400).json({
       message: 'Invalid input data',
       error: 'INPUT_VALIDATION_ERROR'
@@ -437,6 +530,199 @@ export function validateRequestSize(maxSizeBytes: number = 1024 * 1024) { // 1MB
 
     next();
   };
+}
+
+/**
+ * SQL injection prevention middleware for database endpoints
+ */
+export function sqlInjectionPrevention(req: SanitizedRequest, res: Response, next: NextFunction): void {
+  try {
+    // Check URL parameters for SQL injection patterns
+    if (req.params) {
+      for (const [key, value] of Object.entries(req.params)) {
+        if (typeof value === 'string') {
+          const sqlPatterns = [
+            /(\bunion\b|\bselect\b|\binsert\b|\bdelete\b|\bupdate\b|\bdrop\b|\bcreate\b|\balter\b)/gi,
+            /('|;|--|\/\*|\*\/)/gi,
+            /(1\s*=\s*1|'\s+or\s+'1'\s*=\s*'1)/gi,
+            /(information_schema|sysobjects|syscolumns)/gi,
+            /(load_file|into\s+outfile|into\s+dumpfile)/gi
+          ];
+
+          for (const pattern of sqlPatterns) {
+            if (pattern.test(value)) {
+              log('SQL injection attempt detected in URL parameter', {
+                parameter: key,
+                value: value.substring(0, 100) + (value.length > 100 ? '...' : ''),
+                pattern: pattern.source,
+                path: req.path,
+                method: req.method,
+                ip: req.ip,
+                timestamp: new Date().toISOString()
+              });
+
+              res.status(400).json({
+                message: 'Invalid parameter format',
+                error: 'SQL_INJECTION_DETECTED'
+              });
+              return;
+            }
+          }
+        }
+      }
+    }
+
+    // Check query parameters for SQL injection
+    if (req.query) {
+      for (const [key, value] of Object.entries(req.query)) {
+        if (typeof value === 'string') {
+          const sqlPatterns = [
+            /(\bunion\b|\bselect\b|\bwhere\b|\bhaving\b|\border\s+by\b|\bgroup\s+by\b)/gi,
+            /('|;|--|\/\*|\*\/)/gi,
+            /(1\s*=\s*1|'\s+or\s+'1'\s*=\s*'1)/gi,
+            /(substring\s*\(|substr\s*\(|convert\s*\(|cast\s*\()/gi
+          ];
+
+          for (const pattern of sqlPatterns) {
+            if (pattern.test(value)) {
+              log('SQL injection attempt detected in query parameter', {
+                parameter: key,
+                value: value.substring(0, 100) + (value.length > 100 ? '...' : ''),
+                pattern: pattern.source,
+                path: req.path,
+                method: req.method,
+                ip: req.ip,
+                timestamp: new Date().toISOString()
+              });
+
+              res.status(400).json({
+                message: 'Invalid query parameter',
+                error: 'SQL_INJECTION_DETECTED'
+              });
+              return;
+            }
+          }
+        }
+      }
+    }
+
+    // Check request body for SQL injection patterns (critical for POST/PUT/PATCH requests)
+    if (req.body && typeof req.body === 'object') {
+      const bodyString = JSON.stringify(req.body);
+      const sqlPatterns = [
+        /(\bunion\b|\bselect\b|\binsert\b|\bdelete\b|\bupdate\b|\bdrop\b|\bcreate\b|\balter\b)/gi,
+        /(\bwhere\b|\bhaving\b|\border\s+by\b|\bgroup\s+by\b)/gi,
+        /('|;|--|\/\*|\*\/)/gi,
+        /(1\s*=\s*1|'\s+or\s+'1'\s*=\s*'1)/gi,
+        /(information_schema|sysobjects|syscolumns)/gi,
+        /(load_file|into\s+outfile|into\s+dumpfile)/gi,
+        /(substring\s*\(|substr\s*\(|convert\s*\(|cast\s*\()/gi,
+        /(\bexec\b|\bexecute\b|\bxp_cmdshell\b)/gi,
+        /(\bshutdown\b|\breconfigure\b|\bbackup\b)/gi
+      ];
+
+      for (const pattern of sqlPatterns) {
+        if (pattern.test(bodyString)) {
+          log('SQL injection attempt detected in request body', {
+            bodyPreview: bodyString.substring(0, 200) + (bodyString.length > 200 ? '...' : ''),
+            pattern: pattern.source,
+            path: req.path,
+            method: req.method,
+            ip: req.ip,
+            timestamp: new Date().toISOString()
+          });
+
+          res.status(400).json({
+            message: 'Request contains potentially malicious content',
+            error: 'SQL_INJECTION_DETECTED'
+          });
+          return;
+        }
+      }
+    }
+
+    next();
+  } catch (error) {
+    log('SQL injection prevention error', {
+      error: error instanceof Error ? error.message : String(error),
+      path: req.path,
+      method: req.method
+    });
+
+    res.status(500).json({
+      message: 'Parameter validation error',
+      error: 'VALIDATION_ERROR'
+    });
+  }
+}
+
+/**
+ * XSS prevention middleware with enhanced pattern detection
+ */
+export function enhancedXSSPrevention(req: SanitizedRequest, res: Response, next: NextFunction): void {
+  try {
+    // Check all input sources for XSS patterns
+    const inputSources = [req.body, req.query, req.params];
+
+    for (const source of inputSources) {
+      if (!source) continue;
+
+      const sourceString = JSON.stringify(source);
+      const xssPatterns = [
+        /<script[\s\S]*?>[\s\S]*?<\/script>/gi,
+        /javascript\s*:/gi,
+        /vbscript\s*:/gi,
+        /on\w+\s*=\s*["'][^"']*["']/gi,
+        /<iframe[\s\S]*?>/gi,
+        /<object[\s\S]*?>/gi,
+        /<embed[\s\S]*?>/gi,
+        /<link[\s\S]*?>/gi,
+        /<meta[\s\S]*?>/gi,
+        /\$\{[\s\S]*?\}/gi,
+        /eval\s*\(/gi,
+        /setTimeout\s*\(/gi,
+        /setInterval\s*\(/gi,
+        /Function\s*\(/gi,
+        /alert\s*\(/gi,
+        /confirm\s*\(/gi,
+        /prompt\s*\(/gi,
+        /document\.cookie/gi,
+        /innerHTML\s*[:=]/gi
+      ];
+
+      for (const pattern of xssPatterns) {
+        if (pattern.test(sourceString)) {
+          log('XSS attempt detected and blocked', {
+            pattern: pattern.source,
+            input: sourceString.substring(0, 200) + (sourceString.length > 200 ? '...' : ''),
+            path: req.path,
+            method: req.method,
+            ip: req.ip,
+            timestamp: new Date().toISOString()
+          });
+
+          res.status(400).json({
+            message: 'Input contains potentially malicious content',
+            error: 'XSS_ATTEMPT_DETECTED'
+          });
+          return;
+        }
+      }
+    }
+
+    next();
+  } catch (error) {
+    log('Enhanced XSS prevention error', {
+      error: error instanceof Error ? error.message : String(error),
+      path: req.path,
+      method: req.method
+    });
+
+    res.status(500).json({
+      message: 'Input validation error',
+      error: 'XSS_VALIDATION_ERROR'
+    });
+  }
 }
 
 /**

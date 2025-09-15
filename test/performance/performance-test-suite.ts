@@ -71,6 +71,11 @@ export class PerformanceTestSuite {
       this.testEnvironment = await startTestServer(this.config);
       this.httpClient = new TestHttpClient(this.testEnvironment.baseUrl);
       
+      // Set auth token for authenticated endpoints
+      if (this.config.server.env.ADMIN_TOKEN) {
+        this.httpClient.setAuthToken(this.config.server.env.ADMIN_TOKEN);
+      }
+      
       console.log(`✅ Test server started on ${this.testEnvironment.baseUrl}`);
       
       // Verify server is ready

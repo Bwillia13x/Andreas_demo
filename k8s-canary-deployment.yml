@@ -1,0 +1,305 @@
+# Kubernetes Canary Deployment for mgmt-vibe
+# Enables blue/green and canary deployment strategies
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mgmt-vibe
+---
+# Service that routes traffic between stable and canary deployments
+apiVersion: v1
+kind: Service
+metadata:
+  name: mgmt-vibe-service
+  namespace: mgmt-vibe
+  annotations:
+    # NGINX Ingress annotations for canary routing
+    nginx.ingress.kubernetes.io/canary: "true"
+    nginx.ingress.kubernetes.io/canary-weight: "10"  # 10% of traffic
+spec:
+  selector:
+    app: mgmt-vibe-app
+    version: canary  # Route to canary deployment
+  ports:
+  - port: 80
+    targetPort: 5000
+  type: ClusterIP
+---
+# Stable deployment (current production)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mgmt-vibe-app-stable
+  namespace: mgmt-vibe
+  labels:
+    app: mgmt-vibe-app
+    version: stable
+spec:
+  replicas: 3  # Keep stable deployment running
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: mgmt-vibe-app
+      version: stable
+  template:
+    metadata:
+      labels:
+        app: mgmt-vibe-app
+        version: stable
+    spec:
+      containers:
+      - name: app
+        image: ghcr.io/your-org/mgmt-vibe:latest-stable
+        ports:
+        - containerPort: 5000
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: DEPLOY_ENV
+          value: "production"
+        envFrom:
+        - secretRef:
+            name: app-secrets
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 5000
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /api/health
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 10
+---
+# Canary deployment (new version testing)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mgmt-vibe-app-canary
+  namespace: mgmt-vibe
+  labels:
+    app: mgmt-vibe-app
+    version: canary
+spec:
+  replicas: 1  # Start with 1 replica for canary
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: mgmt-vibe-app
+      version: canary
+  template:
+    metadata:
+      labels:
+        app: mgmt-vibe-app
+        version: canary
+    spec:
+      containers:
+      - name: app
+        image: ghcr.io/your-org/mgmt-vibe:latest-canary
+        ports:
+        - containerPort: 5000
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: DEPLOY_ENV
+          value: "production"
+        - name: CANARY_DEPLOYMENT
+          value: "true"
+        envFrom:
+        - secretRef:
+            name: app-secrets
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 5000
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /api/health
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 10
+---
+# Job for database migration during deployment
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mgmt-vibe-migration-canary
+  namespace: mgmt-vibe
+spec:
+  template:
+    spec:
+      containers:
+      - name: migrate
+        image: ghcr.io/your-org/mgmt-vibe:latest-canary
+        command: ["npm", "run", "db:migrate"]
+        envFrom:
+        - secretRef:
+            name: app-secrets
+      restartPolicy: Never
+  backoffLimit: 3
+---
+# ConfigMap for deployment configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: deployment-config
+  namespace: mgmt-vibe
+data:
+  CANARY_WEIGHT: "10"  # Percentage of traffic to canary
+  PROMOTE_AFTER_MINUTES: "10"  # Auto-promote after monitoring period
+  ROLLBACK_ON_ERROR_RATE: "5.0"  # Rollback if error rate exceeds 5%
+---
+# ServiceMonitor for Prometheus metrics collection
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: mgmt-vibe-monitor
+  namespace: mgmt-vibe
+  labels:
+    team: backend
+spec:
+  selector:
+    matchLabels:
+      app: mgmt-vibe-app
+  endpoints:
+  - port: web
+    path: /api/performance/metrics/prometheus
+    interval: 30s
+    scrapeTimeout: 10s
+---
+# Ingress for canary routing
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mgmt-vibe-ingress
+  namespace: mgmt-vibe
+  annotations:
+    nginx.ingress.kubernetes.io/canary: "true"
+    nginx.ingress.kubernetes.io/canary-weight: "10"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+  - hosts:
+    - your-domain.com
+    secretName: mgmt-vibe-tls
+  rules:
+  - host: your-domain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mgmt-vibe-service
+            port:
+              number: 80
+---
+# Horizontal Pod Autoscaler for canary (scaled based on stable metrics)
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: mgmt-vibe-hpa-canary
+  namespace: mgmt-vibe
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: mgmt-vibe-app-canary
+  minReplicas: 1
+  maxReplicas: 3  # Limit canary scale
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 60
+---
+# PrometheusRule for canary monitoring and alerting
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: mgmt-vibe-canary-alerts
+  namespace: mgmt-vibe
+  labels:
+    team: backend
+spec:
+  groups:
+  - name: mgmt-vibe-canary
+    rules:
+    - alert: MgmtVibeCanaryHighErrorRate
+      expr: rate(http_requests_total{version="canary", status=~"5.."}[5m]) / rate(http_requests_total{version="canary"}[5m]) > 0.05
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Canary deployment has high error rate"
+        description: "Canary version error rate is {{ $value | humanizePercentage }}"
+
+    - alert: MgmtVibeCanarySlowResponseTime
+      expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{version="canary"}[5m])) > 2
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Canary deployment has slow response times"
+        description: "Canary version P95 response time is {{ $value }}s"

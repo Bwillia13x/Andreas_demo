@@ -89,3 +89,102 @@ export async function scheduleBackup(): Promise<void> {
   // For demo purposes, just create a backup now
   await createBackup()
 }
+
+/**
+ * Restore database from backup file
+ */
+export async function restoreBackup(filename: string): Promise<void> {
+  try {
+    const filepath = join(BACKUP_DIR, filename);
+
+    // Check if backup file exists
+    await fs.access(filepath);
+
+    const databaseUrl = getEnvVar('POSTGRES_URL') || getEnvVar('DATABASE_URL');
+    if (!databaseUrl) {
+      throw new Error('Database URL not configured');
+    }
+
+    log('Starting database restore', { filename, filepath });
+
+    // Extract database connection details from URL
+    const dbUrl = new URL(databaseUrl);
+    const dbName = dbUrl.pathname.slice(1);
+    const host = dbUrl.hostname;
+    const port = dbUrl.port || '5432';
+    const user = dbUrl.username;
+    const password = dbUrl.password;
+
+    return new Promise((resolve, reject) => {
+      // Use psql to restore the database
+      const command = `PGPASSWORD="${password}" psql -h ${host} -p ${port} -U ${user} -d ${dbName} < "${filepath}"`;
+
+      exec(command, (error, stdout, stderr) => {
+        if (error) {
+          log('Restore failed', { error: error.message, filename });
+          reject(error);
+          return;
+        }
+
+        if (stderr && !stderr.includes('NOTICE')) {
+          log('Restore warning', { warning: stderr, filename });
+        }
+
+        log('Database restore completed successfully', { filename, filepath });
+        resolve();
+      });
+    });
+  } catch (error) {
+    log('Backup restore error', { error: error instanceof Error ? error.message : 'Unknown error' });
+    throw error;
+  }
+}
+
+/**
+ * Main function for CLI usage
+ */
+async function main() {
+  const command = process.argv[2];
+
+  try {
+    switch (command) {
+      case 'create':
+        const filename = await createBackup();
+        console.log(`Backup created: ${filename}`);
+        break;
+
+      case 'list':
+        const backups = await listBackups();
+        console.log('Available backups:');
+        backups.forEach(backup => {
+          console.log(`  ${backup.filename} - ${backup.size} bytes - ${backup.created.toISOString()}`);
+        });
+        break;
+
+      case 'restore':
+        const restoreFile = process.argv[3];
+        if (!restoreFile) {
+          console.error('Usage: npm run db:backup restore <filename>');
+          process.exit(1);
+        }
+        await restoreBackup(restoreFile);
+        console.log(`Backup restored: ${restoreFile}`);
+        break;
+
+      default:
+        console.log('Usage:');
+        console.log('  npm run db:backup create  - Create a new backup');
+        console.log('  npm run db:backup list    - List available backups');
+        console.log('  npm run db:backup restore <filename> - Restore from backup');
+        break;
+    }
+  } catch (error) {
+    console.error('Error:', error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  }
+}
+
+// Run main if this file is executed directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch(console.error);
+}

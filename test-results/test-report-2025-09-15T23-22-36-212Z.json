@@ -1,0 +1,601 @@
+{
+  "timestamp": "2025-09-15T23:22:36.212Z",
+  "environment": "local",
+  "configuration": {
+    "thresholds": {
+      "maxResponseTime": 200,
+      "maxMemoryUsage": 512,
+      "minConcurrentUsers": 50,
+      "maxErrorRate": 1
+    },
+    "testSuites": [
+      {
+        "name": "smoke-tests",
+        "type": "functional",
+        "enabled": true,
+        "config": {
+          "timeout": 30000,
+          "retries": 2
+        }
+      },
+      {
+        "name": "api-tests",
+        "type": "functional",
+        "enabled": true,
+        "config": {
+          "timeout": 15000,
+          "retries": 1
+        }
+      },
+      {
+        "name": "e2e-tests",
+        "type": "functional",
+        "enabled": true,
+        "config": {
+          "timeout": 60000,
+          "retries": 1,
+          "headless": true
+        }
+      },
+      {
+        "name": "performance-tests",
+        "type": "performance",
+        "enabled": true,
+        "config": {
+          "duration": 60000,
+          "concurrency": 10,
+          "maxConcurrentUsers": 50,
+          "rampUpDuration": 30000
+        }
+      }
+    ]
+  },
+  "summary": {
+    "totalTests": 49,
+    "passed": 41,
+    "failed": 8,
+    "skipped": 0,
+    "duration": 391707,
+    "passRate": 83.6734693877551
+  },
+  "suiteResults": [
+    {
+      "suiteName": "smoke-tests",
+      "suiteType": "functional",
+      "startTime": "2025-09-15T23:16:03.872Z",
+      "endTime": "2025-09-15T23:16:03.898Z",
+      "duration": 26,
+      "tests": [
+        {
+          "suiteType": "functional",
+          "testName": "health-check",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T23:16:03.872Z",
+          "endTime": "2025-09-15T23:16:03.873Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "services-endpoint",
+          "status": "pass",
+          "duration": 4,
+          "startTime": "2025-09-15T23:16:03.873Z",
+          "endTime": "2025-09-15T23:16:03.877Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "staff-endpoint",
+          "status": "pass",
+          "duration": 2,
+          "startTime": "2025-09-15T23:16:03.877Z",
+          "endTime": "2025-09-15T23:16:03.879Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "appointments-endpoint",
+          "status": "pass",
+          "duration": 6,
+          "startTime": "2025-09-15T23:16:03.879Z",
+          "endTime": "2025-09-15T23:16:03.885Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "csv-export",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T23:16:03.885Z",
+          "endTime": "2025-09-15T23:16:03.886Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "chat-non-streaming",
+          "status": "fail",
+          "duration": 3,
+          "startTime": "2025-09-15T23:16:03.886Z",
+          "endTime": "2025-09-15T23:16:03.889Z",
+          "errors": [
+            {
+              "message": "POST /api/chat -> 500: {\"message\":\"Internal server error\",\"error\":\"INTERNAL_SERVER_ERROR\",\"errorId\":\"err_mflqt4mn_4q1kma\",\"timestamp\":\"2025-09-15T23:16:03.887Z\"}",
+              "stack": "Error: POST /api/chat -> 500: {\"message\":\"Internal server error\",\"error\":\"INTERNAL_SERVER_ERROR\",\"errorId\":\"err_mflqt4mn_4q1kma\",\"timestamp\":\"2025-09-15T23:16:03.887Z\"}\n    at TestHttpClient.postJson (/Users/benjaminwilliams/mgmt_vibe_production/test/utils/test-environment.ts:218:13)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async <anonymous> (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:261:20)\n    at async TestOrchestrator.runTest (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:462:7)\n    at async TestOrchestrator.runSmokeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:260:16)\n    at async TestOrchestrator.executeSuite (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:163:25)\n    at async TestOrchestrator.executeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:73:31)\n    at async main (/Users/benjaminwilliams/mgmt_vibe_production/test/cli/test-runner.ts:158:20)"
+            }
+          ]
+        },
+        {
+          "suiteType": "functional",
+          "testName": "chat-streaming",
+          "status": "fail",
+          "duration": 5,
+          "startTime": "2025-09-15T23:16:03.891Z",
+          "endTime": "2025-09-15T23:16:03.896Z",
+          "errors": [
+            {
+              "message": "SSE /api/chat -> 500",
+              "stack": "Error: SSE /api/chat -> 500\n    at TestHttpClient.streamSSE (/Users/benjaminwilliams/mgmt_vibe_production/test/utils/test-environment.ts:268:15)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async <anonymous> (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:271:24)\n    at async TestOrchestrator.runTest (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:462:7)\n    at async TestOrchestrator.runSmokeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:270:16)\n    at async TestOrchestrator.executeSuite (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:163:25)\n    at async TestOrchestrator.executeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:73:31)\n    at async main (/Users/benjaminwilliams/mgmt_vibe_production/test/cli/test-runner.ts:158:20)"
+            }
+          ]
+        },
+        {
+          "suiteType": "functional",
+          "testName": "demo-scenarios",
+          "status": "fail",
+          "duration": 1,
+          "startTime": "2025-09-15T23:16:03.896Z",
+          "endTime": "2025-09-15T23:16:03.897Z",
+          "errors": [
+            {
+              "message": "POST /api/demo/seed?scenario=low_inventory&seed=123 -> 500: {\"message\":\"Internal server error\",\"error\":\"INTERNAL_SERVER_ERROR\",\"errorId\":\"err_mflqt4mx_xmj32q\",\"timestamp\":\"2025-09-15T23:16:03.897Z\"}",
+              "stack": "Error: POST /api/demo/seed?scenario=low_inventory&seed=123 -> 500: {\"message\":\"Internal server error\",\"error\":\"INTERNAL_SERVER_ERROR\",\"errorId\":\"err_mflqt4mx_xmj32q\",\"timestamp\":\"2025-09-15T23:16:03.897Z\"}\n    at TestHttpClient.postJson (/Users/benjaminwilliams/mgmt_vibe_production/test/utils/test-environment.ts:218:13)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async <anonymous> (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:283:7)\n    at async TestOrchestrator.runTest (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:462:7)\n    at async TestOrchestrator.runSmokeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:281:16)\n    at async TestOrchestrator.executeSuite (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:163:25)\n    at async TestOrchestrator.executeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:73:31)\n    at async main (/Users/benjaminwilliams/mgmt_vibe_production/test/cli/test-runner.ts:158:20)"
+            }
+          ]
+        },
+        {
+          "suiteType": "functional",
+          "testName": "error-handling",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T23:16:03.897Z",
+          "endTime": "2025-09-15T23:16:03.898Z"
+        }
+      ],
+      "summary": {
+        "totalTests": 9,
+        "passed": 6,
+        "failed": 3,
+        "skipped": 0,
+        "passRate": 66.66666666666666,
+        "duration": 24
+      },
+      "config": {
+        "timeout": 30000,
+        "retries": 2
+      }
+    },
+    {
+      "suiteName": "api-tests",
+      "suiteType": "functional",
+      "startTime": "2025-09-15T23:16:03.898Z",
+      "endTime": "2025-09-15T23:16:03.908Z",
+      "duration": 10,
+      "tests": [
+        {
+          "suiteType": "functional",
+          "testName": "api--api-profile",
+          "status": "pass",
+          "duration": 2,
+          "startTime": "2025-09-15T23:16:03.898Z",
+          "endTime": "2025-09-15T23:16:03.900Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "api--api-services",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T23:16:03.900Z",
+          "endTime": "2025-09-15T23:16:03.901Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "api--api-staff",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T23:16:03.901Z",
+          "endTime": "2025-09-15T23:16:03.902Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "api--api-customers",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T23:16:03.902Z",
+          "endTime": "2025-09-15T23:16:03.903Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "api--api-appointments",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T23:16:03.903Z",
+          "endTime": "2025-09-15T23:16:03.904Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "api--api-inventory",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T23:16:03.904Z",
+          "endTime": "2025-09-15T23:16:03.905Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "api--api-analytics",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T23:16:03.905Z",
+          "endTime": "2025-09-15T23:16:03.906Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "api--api-pos-sales",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T23:16:03.906Z",
+          "endTime": "2025-09-15T23:16:03.907Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "api--api-marketing-campaigns",
+          "status": "pass",
+          "duration": 0,
+          "startTime": "2025-09-15T23:16:03.907Z",
+          "endTime": "2025-09-15T23:16:03.907Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "api--api-loyalty-entries",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T23:16:03.907Z",
+          "endTime": "2025-09-15T23:16:03.908Z"
+        }
+      ],
+      "summary": {
+        "totalTests": 10,
+        "passed": 10,
+        "failed": 0,
+        "skipped": 0,
+        "passRate": 100,
+        "duration": 10
+      },
+      "config": {
+        "timeout": 15000,
+        "retries": 1
+      }
+    },
+    {
+      "suiteName": "e2e-tests",
+      "suiteType": "functional",
+      "startTime": "2025-09-15T23:16:03.908Z",
+      "endTime": "2025-09-15T23:16:03.909Z",
+      "duration": 1,
+      "tests": [
+        {
+          "suiteType": "functional",
+          "testName": "e2e-navigation",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T23:16:03.908Z",
+          "endTime": "2025-09-15T23:16:03.909Z"
+        }
+      ],
+      "summary": {
+        "totalTests": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "passRate": 100,
+        "duration": 1
+      },
+      "config": {
+        "timeout": 60000,
+        "retries": 1,
+        "headless": true
+      }
+    },
+    {
+      "suiteName": "performance-tests",
+      "suiteType": "performance",
+      "startTime": "2025-09-15T23:16:03.909Z",
+      "endTime": "2025-09-15T23:22:36.010Z",
+      "duration": 392101,
+      "tests": [
+        {
+          "suiteType": "performance",
+          "testName": "load-test-ramp-up",
+          "status": "fail",
+          "duration": 95128,
+          "startTime": "2025-09-15T23:16:04.125Z",
+          "endTime": "2025-09-15T23:17:39.253Z",
+          "errors": [
+            {
+              "message": "Load test failed validation: Error rate (93.6%) exceeds threshold (1%)",
+              "stack": "Error: Load test failed validation: Error rate (93.6%) exceeds threshold (1%)\n    at <anonymous> (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/performance-test-suite.ts:166:15)\n    at async PerformanceTestSuite.runTest (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/performance-test-suite.ts:290:22)\n    at async PerformanceTestSuite.executeLoadTests (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/performance-test-suite.ts:153:18)\n    at async PerformanceTestSuite.executeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/performance-test-suite.ts:86:25)\n    at async TestOrchestrator.runPerformanceTests (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:396:27)\n    at async TestOrchestrator.executeSuite (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:172:25)\n    at async TestOrchestrator.executeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:73:31)\n    at async main (/Users/benjaminwilliams/mgmt_vibe_production/test/cli/test-runner.ts:158:20)"
+            }
+          ]
+        },
+        {
+          "suiteType": "performance",
+          "testName": "load-test-spike",
+          "status": "pass",
+          "duration": 30063,
+          "startTime": "2025-09-15T23:17:39.255Z",
+          "endTime": "2025-09-15T23:18:09.318Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "load-test-sustained",
+          "status": "fail",
+          "duration": 120161,
+          "startTime": "2025-09-15T23:18:09.318Z",
+          "endTime": "2025-09-15T23:20:09.479Z",
+          "errors": [
+            {
+              "message": "Sustained load test failed: Error rate (100.0%) exceeds threshold (1%)",
+              "stack": "Error: Sustained load test failed: Error rate (100.0%) exceeds threshold (1%)\n    at <anonymous> (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/performance-test-suite.ts:218:15)\n    at async PerformanceTestSuite.runTest (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/performance-test-suite.ts:290:22)\n    at async PerformanceTestSuite.executeLoadTests (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/performance-test-suite.ts:206:18)\n    at async PerformanceTestSuite.executeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/performance-test-suite.ts:86:25)\n    at async TestOrchestrator.runPerformanceTests (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:396:27)\n    at async TestOrchestrator.executeSuite (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:172:25)\n    at async TestOrchestrator.executeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:73:31)\n    at async main (/Users/benjaminwilliams/mgmt_vibe_production/test/cli/test-runner.ts:158:20)"
+            }
+          ]
+        },
+        {
+          "suiteType": "performance",
+          "testName": "response-time--api-health",
+          "status": "pass",
+          "duration": 1061,
+          "startTime": "2025-09-15T23:20:09.480Z",
+          "endTime": "2025-09-15T23:20:10.541Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "response-time--api-services",
+          "status": "pass",
+          "duration": 1045,
+          "startTime": "2025-09-15T23:20:10.541Z",
+          "endTime": "2025-09-15T23:20:11.586Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "response-time--api-staff",
+          "status": "pass",
+          "duration": 1041,
+          "startTime": "2025-09-15T23:20:11.586Z",
+          "endTime": "2025-09-15T23:20:12.627Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "response-time--api-appointments-day-today",
+          "status": "pass",
+          "duration": 1040,
+          "startTime": "2025-09-15T23:20:12.627Z",
+          "endTime": "2025-09-15T23:20:13.667Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "response-time--api-customers",
+          "status": "pass",
+          "duration": 1039,
+          "startTime": "2025-09-15T23:20:13.667Z",
+          "endTime": "2025-09-15T23:20:14.706Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "response-time--api-inventory",
+          "status": "pass",
+          "duration": 1040,
+          "startTime": "2025-09-15T23:20:14.706Z",
+          "endTime": "2025-09-15T23:20:15.746Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "response-time--api-analytics",
+          "status": "pass",
+          "duration": 1044,
+          "startTime": "2025-09-15T23:20:15.746Z",
+          "endTime": "2025-09-15T23:20:16.790Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "response-time--api-pos-sales",
+          "status": "pass",
+          "duration": 1046,
+          "startTime": "2025-09-15T23:20:16.790Z",
+          "endTime": "2025-09-15T23:20:17.836Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "response-time--api-marketing-campaigns",
+          "status": "pass",
+          "duration": 1043,
+          "startTime": "2025-09-15T23:20:17.836Z",
+          "endTime": "2025-09-15T23:20:18.879Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "response-time--api-loyalty-entries",
+          "status": "pass",
+          "duration": 1037,
+          "startTime": "2025-09-15T23:20:18.879Z",
+          "endTime": "2025-09-15T23:20:19.917Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "concurrent-latency",
+          "status": "pass",
+          "duration": 3,
+          "startTime": "2025-09-15T23:20:19.917Z",
+          "endTime": "2025-09-15T23:20:19.920Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "page-load--",
+          "status": "pass",
+          "duration": 4,
+          "startTime": "2025-09-15T23:20:19.920Z",
+          "endTime": "2025-09-15T23:20:19.924Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "page-load--pos",
+          "status": "pass",
+          "duration": 3,
+          "startTime": "2025-09-15T23:20:19.924Z",
+          "endTime": "2025-09-15T23:20:19.927Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "page-load--analytics",
+          "status": "pass",
+          "duration": 4,
+          "startTime": "2025-09-15T23:20:19.927Z",
+          "endTime": "2025-09-15T23:20:19.931Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "page-load--inventory",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T23:20:19.931Z",
+          "endTime": "2025-09-15T23:20:19.932Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "page-load--marketing",
+          "status": "pass",
+          "duration": 0,
+          "startTime": "2025-09-15T23:20:19.932Z",
+          "endTime": "2025-09-15T23:20:19.932Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "page-load--loyalty",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T23:20:19.932Z",
+          "endTime": "2025-09-15T23:20:19.933Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "page-load--scheduling",
+          "status": "pass",
+          "duration": 0,
+          "startTime": "2025-09-15T23:20:19.933Z",
+          "endTime": "2025-09-15T23:20:19.933Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "page-load--staff",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T23:20:19.933Z",
+          "endTime": "2025-09-15T23:20:19.934Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "streaming-What-is-our-schedule",
+          "status": "fail",
+          "duration": 1,
+          "startTime": "2025-09-15T23:20:19.934Z",
+          "endTime": "2025-09-15T23:20:19.935Z",
+          "errors": [
+            {
+              "message": "Streaming test failed: Streaming failed: Streaming request failed: HTTP 500",
+              "stack": "Error: Streaming test failed: Streaming failed: Streaming request failed: HTTP 500\n    at <anonymous> (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/response-time-testing.ts:349:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async ResponseTimeTester.runTest (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/response-time-testing.ts:603:22)\n    at async ResponseTimeTester.testStreamingPerformance (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/response-time-testing.ts:345:20)\n    at async ResponseTimeTester.executeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/response-time-testing.ts:142:23)\n    at async PerformanceTestSuite.executeResponseTimeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/performance-test-suite.ts:255:21)\n    at async PerformanceTestSuite.executeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/performance-test-suite.ts:91:25)\n    at async TestOrchestrator.runPerformanceTests (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:396:27)\n    at async TestOrchestrator.executeSuite (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:172:25)\n    at async TestOrchestrator.executeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:73:31)"
+            }
+          ]
+        },
+        {
+          "suiteType": "performance",
+          "testName": "streaming-Give-me-a-quick-summ",
+          "status": "fail",
+          "duration": 1,
+          "startTime": "2025-09-15T23:20:19.935Z",
+          "endTime": "2025-09-15T23:20:19.936Z",
+          "errors": [
+            {
+              "message": "Streaming test failed: Streaming failed: Streaming request failed: HTTP 500",
+              "stack": "Error: Streaming test failed: Streaming failed: Streaming request failed: HTTP 500\n    at <anonymous> (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/response-time-testing.ts:349:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async ResponseTimeTester.runTest (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/response-time-testing.ts:603:22)\n    at async ResponseTimeTester.testStreamingPerformance (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/response-time-testing.ts:345:20)\n    at async ResponseTimeTester.executeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/response-time-testing.ts:142:23)\n    at async PerformanceTestSuite.executeResponseTimeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/performance-test-suite.ts:255:21)\n    at async PerformanceTestSuite.executeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/performance-test-suite.ts:91:25)\n    at async TestOrchestrator.runPerformanceTests (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:396:27)\n    at async TestOrchestrator.executeSuite (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:172:25)\n    at async TestOrchestrator.executeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:73:31)"
+            }
+          ]
+        },
+        {
+          "suiteType": "performance",
+          "testName": "streaming-How-are-our-marketin",
+          "status": "fail",
+          "duration": 0,
+          "startTime": "2025-09-15T23:20:19.936Z",
+          "endTime": "2025-09-15T23:20:19.936Z",
+          "errors": [
+            {
+              "message": "Streaming test failed: Streaming failed: Streaming request failed: HTTP 500",
+              "stack": "Error: Streaming test failed: Streaming failed: Streaming request failed: HTTP 500\n    at <anonymous> (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/response-time-testing.ts:349:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async ResponseTimeTester.runTest (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/response-time-testing.ts:603:22)\n    at async ResponseTimeTester.testStreamingPerformance (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/response-time-testing.ts:345:20)\n    at async ResponseTimeTester.executeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/response-time-testing.ts:142:23)\n    at async PerformanceTestSuite.executeResponseTimeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/performance-test-suite.ts:255:21)\n    at async PerformanceTestSuite.executeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/performance-test-suite.ts:91:25)\n    at async TestOrchestrator.runPerformanceTests (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:396:27)\n    at async TestOrchestrator.executeSuite (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:172:25)\n    at async TestOrchestrator.executeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:73:31)"
+            }
+          ]
+        },
+        {
+          "suiteType": "performance",
+          "testName": "memory-leak-detection",
+          "status": "pass",
+          "duration": 60400,
+          "startTime": "2025-09-15T23:20:19.936Z",
+          "endTime": "2025-09-15T23:21:20.336Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "cpu-usage-monitoring",
+          "status": "pass",
+          "duration": 30140,
+          "startTime": "2025-09-15T23:21:20.336Z",
+          "endTime": "2025-09-15T23:21:50.476Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "resource-usage-monitoring",
+          "status": "pass",
+          "duration": 30209,
+          "startTime": "2025-09-15T23:21:50.478Z",
+          "endTime": "2025-09-15T23:22:20.687Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "resources-under-load",
+          "status": "pass",
+          "duration": 15116,
+          "startTime": "2025-09-15T23:22:20.687Z",
+          "endTime": "2025-09-15T23:22:35.803Z"
+        }
+      ],
+      "summary": {
+        "totalTests": 29,
+        "passed": 24,
+        "failed": 5,
+        "skipped": 0,
+        "passRate": 82.75862068965517,
+        "duration": 391672
+      },
+      "config": {
+        "duration": 60000,
+        "concurrency": 10,
+        "maxConcurrentUsers": 50,
+        "rampUpDuration": 30000
+      }
+    }
+  ],
+  "performanceMetrics": [],
+  "recommendations": [
+    "Test pass rate is 83.7%. Consider investigating failing tests before deployment."
+  ],
+  "readinessScore": 67.34693877551021,
+  "metadata": {
+    "nodeVersion": "v22.18.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "totalMemory": 16384
+  }
+}

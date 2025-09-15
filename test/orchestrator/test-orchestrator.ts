@@ -52,6 +52,10 @@ export class TestOrchestrator {
 
       // Initialize test utilities
       const httpClient = new TestHttpClient(testEnvironment.baseUrl);
+      // Set auth token from test configuration if available
+      if (this.config.server.env.ADMIN_TOKEN) {
+        httpClient.setAuthToken(this.config.server.env.ADMIN_TOKEN);
+      }
       const dataManager = new TestDataManager(httpClient);
 
       // Verify server health

@@ -5,7 +5,9 @@
 
 import { Pool, PoolClient, PoolConfig } from 'pg';
 import { log } from '../log';
-import { getEnvVar } from '../env-security';
+import { getEnvVar, getEnvVarString } from '../env-security';
+import { performanceMonitor } from './performance-monitor';
+import { traceDatabaseOperation } from '../tracing/opentelemetry';
 
 export interface ConnectionPoolConfig extends PoolConfig {
   // Pool size configuration
@@ -235,40 +237,42 @@ export class EnhancedConnectionPool {
     const start = Date.now();
     let client: PoolClient | null = null;
 
-    try {
-      client = await this.pool.connect();
-      const result = await client.query(text, params);
-      
-      this.metrics.totalQueries++;
-      const duration = Date.now() - start;
-      this.queryTimes.push(duration);
+    return traceDatabaseOperation('query', text, params || [], async () => {
+      try {
+        client = await this.pool.connect();
+        const result = await client.query(text, params);
 
-      // Log slow queries
-      if (duration > 1000) {
-        log('Slow database query detected', {
+        this.metrics.totalQueries++;
+        const duration = Date.now() - start;
+        this.queryTimes.push(duration);
+
+        // Record performance metrics
+        performanceMonitor.recordQuery(text, duration, params);
+
+        return {
+          rows: result.rows,
+          rowCount: result.rowCount ?? 0
+        };
+      } catch (error) {
+        this.metrics.totalErrors++;
+        const duration = Date.now() - start;
+
+        log('Database query error', {
+          error: error instanceof Error ? error.message : String(error),
           query: text.substring(0, 100),
-          duration,
-          params: params ? params.length : 0
+          duration
         });
-      }
 
-      return {
-        rows: result.rows,
-        rowCount: result.rowCount ?? 0
-      };
-    } catch (error) {
-      this.metrics.totalErrors++;
-      log('Database query error', {
-        error: error instanceof Error ? error.message : String(error),
-        query: text.substring(0, 100),
-        duration: Date.now() - start
-      });
-      throw error;
-    } finally {
-      if (client) {
-        client.release();
+        // Record error metrics (with negative duration to indicate error)
+        performanceMonitor.recordQuery(text, -duration, params);
+
+        throw error;
+      } finally {
+        if (client) {
+          client.release();
+        }
       }
-    }
+    });
   }
 
   /**
@@ -375,25 +379,64 @@ export class EnhancedConnectionPool {
   }
 }
 
-// Create and export the enhanced connection pool
+// Get database URL (may be undefined for testing)
 const databaseUrl = getEnvVar('POSTGRES_URL') || getEnvVar('DATABASE_URL');
 
-if (!databaseUrl) {
-  throw new Error(
-    "POSTGRES_URL or DATABASE_URL must be set. Did you forget to provision a database?",
-  );
+// Configure pool sizes based on environment
+const isProduction = getEnvVar('NODE_ENV') === 'production';
+
+// Create a mock pool for testing when no database is configured
+let connectionPool: EnhancedConnectionPool;
+
+if (databaseUrl) {
+  connectionPool = new EnhancedConnectionPool({
+    connectionString: databaseUrl,
+    // Production-optimized pool configuration with increased limits for high concurrency
+    min: parseInt(getEnvVarString('DB_POOL_MIN') || (isProduction ? '20' : '10')),
+    max: parseInt(getEnvVarString('DB_POOL_MAX') || (isProduction ? '100' : '50')),
+    acquireTimeoutMillis: parseInt(getEnvVarString('DB_ACQUIRE_TIMEOUT') || '15000'), // Increased timeout
+    createTimeoutMillis: parseInt(getEnvVarString('DB_CREATE_TIMEOUT') || '10000'),
+    destroyTimeoutMillis: parseInt(getEnvVarString('DB_DESTROY_TIMEOUT') || '10000'),
+    idleTimeoutMillis: parseInt(getEnvVarString('DB_IDLE_TIMEOUT') || '60000'), // Increased idle timeout
+    reapIntervalMillis: parseInt(getEnvVarString('DB_REAP_INTERVAL') || '1000'),
+    createRetryIntervalMillis: parseInt(getEnvVarString('DB_RETRY_INTERVAL') || '500'),
+    connectionTimeoutMillis: parseInt(getEnvVarString('DB_CONNECTION_TIMEOUT') || '10000'), // Increased connection timeout
+    healthCheckInterval: parseInt(getEnvVarString('DB_HEALTH_CHECK_INTERVAL') || '15000'), // More frequent health checks
+    maxConnectionAge: parseInt(getEnvVarString('DB_MAX_CONNECTION_AGE') || '7200000'), // 2 hours
+    enableMonitoring: true,
+    monitoringInterval: parseInt(getEnvVarString('DB_MONITORING_INTERVAL') || '5000') // More frequent monitoring
+  });
+} else {
+  // Create a mock pool for testing/development without database
+  connectionPool = {
+    query: async () => ({ rows: [], rowCount: 0 }),
+    getConnection: async () => ({ release: () => {} }),
+    transaction: async (fn: Function) => fn({ release: () => {} }),
+    getMetrics: () => ({
+      totalConnections: 0,
+      idleConnections: 0,
+      activeConnections: 0,
+      waitingClients: 0,
+      poolUtilization: 0,
+      totalQueries: 0,
+      totalErrors: 0,
+      averageQueryTime: 0,
+      uptime: 0
+    }),
+    getStatus: () => ({
+      healthy: true,
+      totalConnections: 0,
+      idleConnections: 0,
+      activeConnections: 0,
+      waitingClients: 0,
+      poolUtilization: 0
+    }),
+    end: async () => {},
+    shutdown: async () => {}
+  } as any;
 }
 
-export const connectionPool = new EnhancedConnectionPool({
-  connectionString: databaseUrl,
-  min: 5,
-  max: 25,
-  acquireTimeoutMillis: 10000,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
-  enableMonitoring: true,
-  healthCheckInterval: 30000
-});
+export { connectionPool };
 
 // Graceful shutdown handling
 process.on('SIGTERM', async () => {

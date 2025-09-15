@@ -1,0 +1,563 @@
+{
+  "timestamp": "2025-09-15T19:28:24.314Z",
+  "environment": "local",
+  "configuration": {
+    "thresholds": {
+      "maxResponseTime": 200,
+      "maxMemoryUsage": 512,
+      "minConcurrentUsers": 50,
+      "maxErrorRate": 1
+    },
+    "testSuites": [
+      {
+        "name": "smoke-tests",
+        "type": "functional",
+        "enabled": true,
+        "config": {
+          "timeout": 30000,
+          "retries": 2
+        }
+      },
+      {
+        "name": "api-tests",
+        "type": "functional",
+        "enabled": true,
+        "config": {
+          "timeout": 15000,
+          "retries": 1
+        }
+      },
+      {
+        "name": "e2e-tests",
+        "type": "functional",
+        "enabled": true,
+        "config": {
+          "timeout": 60000,
+          "retries": 1,
+          "headless": true
+        }
+      },
+      {
+        "name": "performance-tests",
+        "type": "performance",
+        "enabled": true,
+        "config": {
+          "duration": 60000,
+          "concurrency": 10,
+          "maxConcurrentUsers": 50,
+          "rampUpDuration": 30000
+        }
+      }
+    ]
+  },
+  "summary": {
+    "totalTests": 49,
+    "passed": 47,
+    "failed": 2,
+    "skipped": 0,
+    "duration": 392246,
+    "passRate": 95.91836734693877
+  },
+  "suiteResults": [
+    {
+      "suiteName": "smoke-tests",
+      "suiteType": "functional",
+      "startTime": "2025-09-15T19:21:51.434Z",
+      "endTime": "2025-09-15T19:21:51.465Z",
+      "duration": 31,
+      "tests": [
+        {
+          "suiteType": "functional",
+          "testName": "health-check",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T19:21:51.434Z",
+          "endTime": "2025-09-15T19:21:51.435Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "services-endpoint",
+          "status": "pass",
+          "duration": 3,
+          "startTime": "2025-09-15T19:21:51.435Z",
+          "endTime": "2025-09-15T19:21:51.438Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "staff-endpoint",
+          "status": "pass",
+          "duration": 2,
+          "startTime": "2025-09-15T19:21:51.438Z",
+          "endTime": "2025-09-15T19:21:51.440Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "appointments-endpoint",
+          "status": "pass",
+          "duration": 5,
+          "startTime": "2025-09-15T19:21:51.440Z",
+          "endTime": "2025-09-15T19:21:51.445Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "csv-export",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T19:21:51.445Z",
+          "endTime": "2025-09-15T19:21:51.446Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "chat-non-streaming",
+          "status": "pass",
+          "duration": 8,
+          "startTime": "2025-09-15T19:21:51.446Z",
+          "endTime": "2025-09-15T19:21:51.454Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "chat-streaming",
+          "status": "pass",
+          "duration": 5,
+          "startTime": "2025-09-15T19:21:51.454Z",
+          "endTime": "2025-09-15T19:21:51.459Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "demo-scenarios",
+          "status": "pass",
+          "duration": 6,
+          "startTime": "2025-09-15T19:21:51.459Z",
+          "endTime": "2025-09-15T19:21:51.465Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "error-handling",
+          "status": "pass",
+          "duration": 0,
+          "startTime": "2025-09-15T19:21:51.465Z",
+          "endTime": "2025-09-15T19:21:51.465Z"
+        }
+      ],
+      "summary": {
+        "totalTests": 9,
+        "passed": 9,
+        "failed": 0,
+        "skipped": 0,
+        "passRate": 100,
+        "duration": 31
+      },
+      "config": {
+        "timeout": 30000,
+        "retries": 2
+      }
+    },
+    {
+      "suiteName": "api-tests",
+      "suiteType": "functional",
+      "startTime": "2025-09-15T19:21:51.465Z",
+      "endTime": "2025-09-15T19:21:51.473Z",
+      "duration": 8,
+      "tests": [
+        {
+          "suiteType": "functional",
+          "testName": "api--api-profile",
+          "status": "pass",
+          "duration": 0,
+          "startTime": "2025-09-15T19:21:51.466Z",
+          "endTime": "2025-09-15T19:21:51.466Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "api--api-services",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T19:21:51.466Z",
+          "endTime": "2025-09-15T19:21:51.467Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "api--api-staff",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T19:21:51.467Z",
+          "endTime": "2025-09-15T19:21:51.468Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "api--api-customers",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T19:21:51.468Z",
+          "endTime": "2025-09-15T19:21:51.469Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "api--api-appointments",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T19:21:51.469Z",
+          "endTime": "2025-09-15T19:21:51.470Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "api--api-inventory",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T19:21:51.470Z",
+          "endTime": "2025-09-15T19:21:51.471Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "api--api-analytics",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T19:21:51.471Z",
+          "endTime": "2025-09-15T19:21:51.472Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "api--api-pos-sales",
+          "status": "pass",
+          "duration": 0,
+          "startTime": "2025-09-15T19:21:51.472Z",
+          "endTime": "2025-09-15T19:21:51.472Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "api--api-marketing-campaigns",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T19:21:51.472Z",
+          "endTime": "2025-09-15T19:21:51.473Z"
+        },
+        {
+          "suiteType": "functional",
+          "testName": "api--api-loyalty-entries",
+          "status": "pass",
+          "duration": 0,
+          "startTime": "2025-09-15T19:21:51.473Z",
+          "endTime": "2025-09-15T19:21:51.473Z"
+        }
+      ],
+      "summary": {
+        "totalTests": 10,
+        "passed": 10,
+        "failed": 0,
+        "skipped": 0,
+        "passRate": 100,
+        "duration": 7
+      },
+      "config": {
+        "timeout": 15000,
+        "retries": 1
+      }
+    },
+    {
+      "suiteName": "e2e-tests",
+      "suiteType": "functional",
+      "startTime": "2025-09-15T19:21:51.473Z",
+      "endTime": "2025-09-15T19:21:51.475Z",
+      "duration": 2,
+      "tests": [
+        {
+          "suiteType": "functional",
+          "testName": "e2e-navigation",
+          "status": "pass",
+          "duration": 2,
+          "startTime": "2025-09-15T19:21:51.473Z",
+          "endTime": "2025-09-15T19:21:51.475Z"
+        }
+      ],
+      "summary": {
+        "totalTests": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "passRate": 100,
+        "duration": 2
+      },
+      "config": {
+        "timeout": 60000,
+        "retries": 1,
+        "headless": true
+      }
+    },
+    {
+      "suiteName": "performance-tests",
+      "suiteType": "performance",
+      "startTime": "2025-09-15T19:21:51.475Z",
+      "endTime": "2025-09-15T19:28:24.110Z",
+      "duration": 392635,
+      "tests": [
+        {
+          "suiteType": "performance",
+          "testName": "load-test-ramp-up",
+          "status": "fail",
+          "duration": 95144,
+          "startTime": "2025-09-15T19:21:51.690Z",
+          "endTime": "2025-09-15T19:23:26.834Z",
+          "errors": [
+            {
+              "message": "Load test failed validation: Error rate (88.7%) exceeds threshold (1%)",
+              "stack": "Error: Load test failed validation: Error rate (88.7%) exceeds threshold (1%)\n    at <anonymous> (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/performance-test-suite.ts:161:15)\n    at async PerformanceTestSuite.runTest (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/performance-test-suite.ts:285:22)\n    at async PerformanceTestSuite.executeLoadTests (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/performance-test-suite.ts:148:18)\n    at async PerformanceTestSuite.executeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/performance-test-suite.ts:81:25)\n    at async TestOrchestrator.runPerformanceTests (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:396:27)\n    at async TestOrchestrator.executeSuite (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:172:25)\n    at async TestOrchestrator.executeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:73:31)\n    at async main (/Users/benjaminwilliams/mgmt_vibe_production/test/cli/test-runner.ts:158:20)"
+            }
+          ]
+        },
+        {
+          "suiteType": "performance",
+          "testName": "load-test-spike",
+          "status": "pass",
+          "duration": 30073,
+          "startTime": "2025-09-15T19:23:26.842Z",
+          "endTime": "2025-09-15T19:23:56.915Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "load-test-sustained",
+          "status": "fail",
+          "duration": 120168,
+          "startTime": "2025-09-15T19:23:56.915Z",
+          "endTime": "2025-09-15T19:25:57.083Z",
+          "errors": [
+            {
+              "message": "Sustained load test failed: Error rate (88.0%) exceeds threshold (1%)",
+              "stack": "Error: Sustained load test failed: Error rate (88.0%) exceeds threshold (1%)\n    at <anonymous> (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/performance-test-suite.ts:213:15)\n    at async PerformanceTestSuite.runTest (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/performance-test-suite.ts:285:22)\n    at async PerformanceTestSuite.executeLoadTests (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/performance-test-suite.ts:201:18)\n    at async PerformanceTestSuite.executeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/performance/performance-test-suite.ts:81:25)\n    at async TestOrchestrator.runPerformanceTests (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:396:27)\n    at async TestOrchestrator.executeSuite (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:172:25)\n    at async TestOrchestrator.executeTests (/Users/benjaminwilliams/mgmt_vibe_production/test/orchestrator/test-orchestrator.ts:73:31)\n    at async main (/Users/benjaminwilliams/mgmt_vibe_production/test/cli/test-runner.ts:158:20)"
+            }
+          ]
+        },
+        {
+          "suiteType": "performance",
+          "testName": "response-time--api-health",
+          "status": "pass",
+          "duration": 1096,
+          "startTime": "2025-09-15T19:25:57.085Z",
+          "endTime": "2025-09-15T19:25:58.181Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "response-time--api-services",
+          "status": "pass",
+          "duration": 1112,
+          "startTime": "2025-09-15T19:25:58.181Z",
+          "endTime": "2025-09-15T19:25:59.293Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "response-time--api-staff",
+          "status": "pass",
+          "duration": 1113,
+          "startTime": "2025-09-15T19:25:59.293Z",
+          "endTime": "2025-09-15T19:26:00.406Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "response-time--api-appointments-day-today",
+          "status": "pass",
+          "duration": 1104,
+          "startTime": "2025-09-15T19:26:00.406Z",
+          "endTime": "2025-09-15T19:26:01.510Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "response-time--api-customers",
+          "status": "pass",
+          "duration": 1106,
+          "startTime": "2025-09-15T19:26:01.510Z",
+          "endTime": "2025-09-15T19:26:02.616Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "response-time--api-inventory",
+          "status": "pass",
+          "duration": 1125,
+          "startTime": "2025-09-15T19:26:02.616Z",
+          "endTime": "2025-09-15T19:26:03.741Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "response-time--api-analytics",
+          "status": "pass",
+          "duration": 1098,
+          "startTime": "2025-09-15T19:26:03.741Z",
+          "endTime": "2025-09-15T19:26:04.839Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "response-time--api-pos-sales",
+          "status": "pass",
+          "duration": 1103,
+          "startTime": "2025-09-15T19:26:04.839Z",
+          "endTime": "2025-09-15T19:26:05.942Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "response-time--api-marketing-campaigns",
+          "status": "pass",
+          "duration": 1103,
+          "startTime": "2025-09-15T19:26:05.942Z",
+          "endTime": "2025-09-15T19:26:07.045Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "response-time--api-loyalty-entries",
+          "status": "pass",
+          "duration": 1073,
+          "startTime": "2025-09-15T19:26:07.045Z",
+          "endTime": "2025-09-15T19:26:08.118Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "concurrent-latency",
+          "status": "pass",
+          "duration": 18,
+          "startTime": "2025-09-15T19:26:08.118Z",
+          "endTime": "2025-09-15T19:26:08.136Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "page-load--",
+          "status": "pass",
+          "duration": 6,
+          "startTime": "2025-09-15T19:26:08.136Z",
+          "endTime": "2025-09-15T19:26:08.142Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "page-load--pos",
+          "status": "pass",
+          "duration": 4,
+          "startTime": "2025-09-15T19:26:08.142Z",
+          "endTime": "2025-09-15T19:26:08.146Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "page-load--analytics",
+          "status": "pass",
+          "duration": 4,
+          "startTime": "2025-09-15T19:26:08.146Z",
+          "endTime": "2025-09-15T19:26:08.150Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "page-load--inventory",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T19:26:08.150Z",
+          "endTime": "2025-09-15T19:26:08.151Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "page-load--marketing",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T19:26:08.151Z",
+          "endTime": "2025-09-15T19:26:08.152Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "page-load--loyalty",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T19:26:08.152Z",
+          "endTime": "2025-09-15T19:26:08.153Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "page-load--scheduling",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T19:26:08.153Z",
+          "endTime": "2025-09-15T19:26:08.154Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "page-load--staff",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T19:26:08.154Z",
+          "endTime": "2025-09-15T19:26:08.155Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "streaming-What-is-our-schedule",
+          "status": "pass",
+          "duration": 4,
+          "startTime": "2025-09-15T19:26:08.155Z",
+          "endTime": "2025-09-15T19:26:08.159Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "streaming-Give-me-a-quick-summ",
+          "status": "pass",
+          "duration": 1,
+          "startTime": "2025-09-15T19:26:08.159Z",
+          "endTime": "2025-09-15T19:26:08.160Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "streaming-How-are-our-marketin",
+          "status": "pass",
+          "duration": 2,
+          "startTime": "2025-09-15T19:26:08.160Z",
+          "endTime": "2025-09-15T19:26:08.162Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "memory-leak-detection",
+          "status": "pass",
+          "duration": 60385,
+          "startTime": "2025-09-15T19:26:08.163Z",
+          "endTime": "2025-09-15T19:27:08.548Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "cpu-usage-monitoring",
+          "status": "pass",
+          "duration": 30136,
+          "startTime": "2025-09-15T19:27:08.548Z",
+          "endTime": "2025-09-15T19:27:38.684Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "resource-usage-monitoring",
+          "status": "pass",
+          "duration": 30100,
+          "startTime": "2025-09-15T19:27:38.684Z",
+          "endTime": "2025-09-15T19:28:08.784Z"
+        },
+        {
+          "suiteType": "performance",
+          "testName": "resources-under-load",
+          "status": "pass",
+          "duration": 15123,
+          "startTime": "2025-09-15T19:28:08.784Z",
+          "endTime": "2025-09-15T19:28:23.907Z"
+        }
+      ],
+      "summary": {
+        "totalTests": 29,
+        "passed": 27,
+        "failed": 2,
+        "skipped": 0,
+        "passRate": 93.10344827586206,
+        "duration": 392206
+      },
+      "config": {
+        "duration": 60000,
+        "concurrency": 10,
+        "maxConcurrentUsers": 50,
+        "rampUpDuration": 30000
+      }
+    }
+  ],
+  "performanceMetrics": [],
+  "recommendations": [],
+  "readinessScore": 91.83673469387755,
+  "metadata": {
+    "nodeVersion": "v22.18.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "totalMemory": 16384
+  }
+}

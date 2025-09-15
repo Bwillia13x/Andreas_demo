@@ -5,6 +5,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { log } from '../../lib/log';
+import { captureException } from '../../lib/error-reporting/sentry';
 
 export interface ErrorHandlingConfig {
   enableCircuitBreaker: boolean;
@@ -256,6 +257,20 @@ export function enhancedErrorHandler(req: Request, res: Response, next: NextFunc
     message = 'Internal server error';
   }
   
+  // Capture error with Sentry if it's a server error
+  if (shouldLog && error instanceof Error) {
+    captureException(error, {
+      errorId,
+      errorType,
+      statusCode,
+      path: req.path,
+      method: req.method,
+      ip: req.ip,
+      userAgent: req.get('User-Agent'),
+      timestamp
+    });
+  }
+
   // Log error if appropriate
   if (shouldLog) {
     log(`Error ${errorId}: ${error.message || message}`, {

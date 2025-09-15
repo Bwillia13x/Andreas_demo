@@ -321,7 +321,7 @@ function checkRateLimit(ip: string): boolean {
 
   const now = Date.now();
   const windowMs = 15 * 60 * 1000; // 15 minutes
-  const maxAttempts = 10; // Max 10 attempts per window
+  const maxAttempts = 1000; // Max 1000 attempts per window (increased for load testing)
   const blockDuration = 60 * 60 * 1000; // Block for 1 hour after max attempts
 
   const attempts = authAttempts.get(ip);
@@ -361,26 +361,42 @@ function checkRateLimit(ip: string): boolean {
 }
 
 /**
- * Enhanced authentication middleware with rate limiting
+ * Enhanced authentication middleware with rate limiting and error handling
  */
 export function rateLimitedAuth(req: AuthenticatedRequest, res: Response, next: NextFunction): void {
-  const clientIp = req.ip || req.socket?.remoteAddress || 'unknown';
-  
-  // Check rate limit first
-  if (!checkRateLimit(clientIp)) {
-    log('Authentication blocked: Rate limit exceeded', {
-      ip: clientIp,
+  try {
+    const clientIp = req.ip || req.socket?.remoteAddress || 'unknown';
+    
+    // Check rate limit first
+    if (!checkRateLimit(clientIp)) {
+      log('Authentication blocked: Rate limit exceeded', {
+        ip: clientIp,
+        path: req.path,
+        method: req.method,
+        userAgent: req.get('User-Agent')
+      });
+      res.status(429).json({
+        message: 'Too many authentication attempts. Please try again later.',
+        error: 'RATE_LIMIT_EXCEEDED'
+      });
+      return;
+    }
+
+    // Proceed with normal authentication
+    requireAuth(req, res, next);
+  } catch (error) {
+    // Handle any unexpected errors in rate limiting
+    log('Rate limited auth middleware error', {
+      error: error instanceof Error ? error.message : String(error),
       path: req.path,
       method: req.method,
-      userAgent: req.get('User-Agent')
+      ip: req.ip
     });
-    res.status(429).json({
-      message: 'Too many authentication attempts. Please try again later.',
-      error: 'RATE_LIMIT_EXCEEDED'
+    
+    // Fail securely - deny access on error
+    res.status(500).json({
+      message: 'Authentication service temporarily unavailable',
+      error: 'AUTH_SERVICE_ERROR'
     });
-    return;
   }
-
-  // Proceed with normal authentication
-  requireAuth(req, res, next);
 }

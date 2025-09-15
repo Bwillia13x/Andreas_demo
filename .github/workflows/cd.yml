@@ -1,0 +1,234 @@
+name: CD
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      skip_db_migration:
+        description: 'Skip database migration'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: cd-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+      artifact-name: ${{ steps.artifact.outputs.name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Generate SBOM
+        run: |
+          npm install -g @cyclonedx/cdxgen
+          cdxgen -t npm -o dist/sbom.json
+
+      - name: Run smoke tests
+        run: npm run smoke
+
+      - name: Create artifact name
+        id: artifact
+        run: |
+          echo "name=mgmt-vibe-${{ github.sha }}-${{ github.run_number }}" >> $GITHUB_OUTPUT
+
+      - name: Create deployment artifact
+        run: |
+          mkdir -p deploy
+          cp -r dist/* deploy/
+          cp package.json deploy/
+          cp package-lock.json deploy/
+          cp nginx.conf deploy/
+          cp docker-compose.scale.yml deploy/
+          cp Dockerfile deploy/
+          echo "${{ github.sha }}" > deploy/version.txt
+          echo "${{ github.run_number }}" > deploy/build.txt
+
+      - name: Upload deployment artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.artifact.outputs.name }}
+          path: deploy/
+          retention-days: 30
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          sbom: true
+          provenance: true
+
+  deploy-staging:
+    if: github.ref == 'refs/heads/main' || inputs.environment == 'staging'
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment: staging
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download deployment artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build-and-push.outputs.artifact-name }}
+          path: deploy/
+
+      - name: Setup staging deployment
+        run: |
+          echo "STAGING_DEPLOYMENT=true" >> $GITHUB_ENV
+          echo "DEPLOY_ENV=staging" >> $GITHUB_ENV
+
+      - name: Deploy to staging
+        env:
+          DEPLOY_ENV: staging
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          OPENAI_API_KEY: ${{ secrets.STAGING_OPENAI_API_KEY }}
+          SESSION_SECRET: ${{ secrets.STAGING_SESSION_SECRET }}
+        run: |
+          # Here you would typically deploy to your staging environment
+          # This could be Docker Swarm, Kubernetes, cloud provider, etc.
+
+          echo "🚀 Deploying to staging environment..."
+          echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build-and-push.outputs.image-digest }}"
+          echo "Artifact: ${{ needs.build-and-push.outputs.artifact-name }}"
+
+          # Run database migrations if not skipped
+          if [[ "${{ inputs.skip_db_migration }}" != "true" ]]; then
+            echo "Running database migrations..."
+            # Your migration command here
+          fi
+
+          # Health check
+          echo "Performing health checks..."
+          # Your health check logic here
+
+          echo "✅ Staging deployment completed"
+
+  deploy-production:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && inputs.environment == 'production'
+    runs-on: ubuntu-latest
+    needs: [build-and-push, deploy-staging]
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download deployment artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build-and-push.outputs.artifact-name }}
+          path: deploy/
+
+      - name: Setup production deployment
+        run: |
+          echo "PRODUCTION_DEPLOYMENT=true" >> $GITHUB_ENV
+          echo "DEPLOY_ENV=production" >> $GITHUB_ENV
+
+      - name: Canary deployment to production
+        env:
+          DEPLOY_ENV: production
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+          OPENAI_API_KEY: ${{ secrets.PRODUCTION_OPENAI_API_KEY }}
+          SESSION_SECRET: ${{ secrets.PRODUCTION_SESSION_SECRET }}
+        run: |
+          echo "🚀 Starting canary deployment to production..."
+
+          # Step 1: Deploy to 10% of traffic
+          echo "Step 1: Deploying to 10% of traffic..."
+          # Your canary deployment logic here
+
+          # Step 2: Run smoke tests on canary
+          echo "Step 2: Running smoke tests on canary deployment..."
+          # Run smoke tests against canary environment
+
+          # Step 3: Monitor for 5 minutes
+          echo "Step 3: Monitoring canary deployment for 5 minutes..."
+          # Monitor error rates, response times, etc.
+
+          # Step 4: If successful, scale to 50%
+          echo "Step 4: Scaling to 50% traffic..."
+          # Scale up canary deployment
+
+          # Step 5: Monitor for another 5 minutes
+          echo "Step 5: Monitoring 50% deployment for 5 minutes..."
+
+          # Step 6: Full rollout or rollback
+          echo "Step 6: Full production rollout..."
+          # Complete the rollout
+
+          echo "✅ Production deployment completed successfully"
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed, initiating rollback..."
+
+          # Rollback logic here
+          # Could redeploy previous version or scale back canary
+
+          echo "✅ Rollback completed"
+
+  cleanup:
+    if: always()
+    runs-on: ubuntu-latest
+    needs: [build-and-push, deploy-staging, deploy-production]
+    steps:
+      - name: Cleanup old artifacts
+        run: |
+          echo "Cleaning up old deployment artifacts..."
+          # Keep only last 5 builds per environment

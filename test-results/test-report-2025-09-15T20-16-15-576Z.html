@@ -1,0 +1,577 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Report - 2025-09-15T20:16:15.575Z</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f8fafc; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0; }
+        .metric-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .metric-value { font-size: 2em; font-weight: bold; margin-bottom: 5px; }
+        .metric-label { color: #6b7280; font-size: 0.9em; }
+        .readiness-score { font-size: 3em; color: #22c55e; }
+        .suite-results { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .test-item { padding: 10px; border-left: 4px solid #e5e7eb; margin: 5px 0; background: #f9fafb; }
+        .test-pass { border-left-color: #22c55e; }
+        .test-fail { border-left-color: #ef4444; }
+        .test-skip { border-left-color: #f59e0b; }
+        .recommendations { background: #fef3c7; border: 1px solid #f59e0b; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .error-details { background: #fee2e2; border: 1px solid #ef4444; padding: 10px; border-radius: 4px; margin: 10px 0; font-family: monospace; font-size: 0.9em; }
+        .charts-section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .chart-container { width: 100%; height: 400px; margin: 20px 0; }
+        .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .coverage-bar { background: #e5e7eb; height: 20px; border-radius: 10px; overflow: hidden; margin: 10px 0; }
+        .coverage-fill { background: linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #22c55e 100%); height: 100%; transition: width 0.3s ease; }
+        .coverage-text { margin-top: 5px; font-size: 0.9em; color: #6b7280; }
+        .performance-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .performance-table th, .performance-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        .performance-table th { background: #f9fafb; font-weight: 600; }
+        .threshold-indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; }
+        .threshold-good { background: #22c55e; }
+        .threshold-warning { background: #f59e0b; }
+        .threshold-critical { background: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Test Report</h1>
+            <p><strong>Generated:</strong> 2025-09-15T20:16:15.575Z</p>
+            <p><strong>Environment:</strong> local</p>
+            <p><strong>Platform:</strong> darwin arm64 (Node v22.18.0)</p>
+        </div>
+
+        <div class="summary-grid">
+            <div class="metric-card">
+                <div class="metric-value readiness-score">91.83673469387755%</div>
+                <div class="metric-label">Production Readiness</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" style="color: #22c55e">47</div>
+                <div class="metric-label">Tests Passed</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" style="color: #ef4444">2</div>
+                <div class="metric-label">Tests Failed</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">95.9%</div>
+                <div class="metric-label">Pass Rate</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">391.8s</div>
+                <div class="metric-label">Total Duration</div>
+            </div>
+        </div>
+
+        
+
+        <div class="charts-section">
+            <h2>Test Coverage Analysis</h2>
+            
+      <div class="coverage-section">
+        <h3>Overall Test Coverage: 95.9%</h3>
+        <div class="coverage-bar">
+          <div class="coverage-fill" style="width: 95.91836734693877%"></div>
+        </div>
+        <div class="coverage-text">47 of 49 tests passed</div>
+        
+        <h4>Coverage by Test Type</h4>
+        
+          <div style="margin: 15px 0;">
+            <strong>Functional Tests</strong>
+            
+              <div class="coverage-bar">
+                <div class="coverage-fill" style="width: 100%"></div>
+              </div>
+              <div class="coverage-text">20 of 20 tests passed (100.0%)</div>
+            
+          </div>
+        
+          <div style="margin: 15px 0;">
+            <strong>Performance Tests</strong>
+            
+              <div class="coverage-bar">
+                <div class="coverage-fill" style="width: 93.10344827586206%"></div>
+              </div>
+              <div class="coverage-text">27 of 29 tests passed (93.1%)</div>
+            
+          </div>
+        
+          <div style="margin: 15px 0;">
+            <strong>Security Tests</strong>
+            
+              <div class="coverage-text" style="color: #ef4444;">No tests executed</div>
+            
+          </div>
+        
+          <div style="margin: 15px 0;">
+            <strong>Deployment Tests</strong>
+            
+              <div class="coverage-text" style="color: #ef4444;">No tests executed</div>
+            
+          </div>
+        
+          <div style="margin: 15px 0;">
+            <strong>Uat Tests</strong>
+            
+              <div class="coverage-text" style="color: #ef4444;">No tests executed</div>
+            
+          </div>
+        
+      </div>
+    
+        </div>
+
+        
+
+        
+        <div class="suite-results">
+            <h2>smoke-tests (functional)</h2>
+            <p><strong>Duration:</strong> 0.0s | 
+               <strong>Tests:</strong> 9 | 
+               <strong>Pass Rate:</strong> 100.0%</p>
+            
+            
+            <div class="test-item test-pass">
+                <strong>health-check</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>services-endpoint</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">4ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>staff-endpoint</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">2ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>appointments-endpoint</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">4ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>csv-export</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">2ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>chat-non-streaming</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">7ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>chat-streaming</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">5ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>demo-scenarios</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">6ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>error-handling</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">0ms</span>
+                
+                
+            </div>
+            
+        </div>
+        
+        <div class="suite-results">
+            <h2>api-tests (functional)</h2>
+            <p><strong>Duration:</strong> 0.0s | 
+               <strong>Tests:</strong> 10 | 
+               <strong>Pass Rate:</strong> 100.0%</p>
+            
+            
+            <div class="test-item test-pass">
+                <strong>api--api-profile</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>api--api-services</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>api--api-staff</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>api--api-customers</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>api--api-appointments</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>api--api-inventory</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>api--api-analytics</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>api--api-pos-sales</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>api--api-marketing-campaigns</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">0ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>api--api-loyalty-entries</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1ms</span>
+                
+                
+            </div>
+            
+        </div>
+        
+        <div class="suite-results">
+            <h2>e2e-tests (functional)</h2>
+            <p><strong>Duration:</strong> 0.0s | 
+               <strong>Tests:</strong> 1 | 
+               <strong>Pass Rate:</strong> 100.0%</p>
+            
+            
+            <div class="test-item test-pass">
+                <strong>e2e-navigation</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1ms</span>
+                
+                
+            </div>
+            
+        </div>
+        
+        <div class="suite-results">
+            <h2>performance-tests (performance)</h2>
+            <p><strong>Duration:</strong> 392.2s | 
+               <strong>Tests:</strong> 29 | 
+               <strong>Pass Rate:</strong> 93.1%</p>
+            
+            
+            <div class="test-item test-fail">
+                <strong>load-test-ramp-up</strong> 
+                <span style="color: #ef4444">FAIL</span>
+                <span style="float: right">95102ms</span>
+                
+                
+                <div class="error-details">
+                    <div>Load test failed validation: Error rate (88.1%) exceeds threshold (1%)</div>
+                </div>
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>load-test-spike</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">30036ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-fail">
+                <strong>load-test-sustained</strong> 
+                <span style="color: #ef4444">FAIL</span>
+                <span style="float: right">120136ms</span>
+                
+                
+                <div class="error-details">
+                    <div>Sustained load test failed: Error rate (88.0%) exceeds threshold (1%)</div>
+                </div>
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>response-time--api-health</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1056ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>response-time--api-services</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1069ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>response-time--api-staff</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1069ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>response-time--api-appointments-day-today</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1076ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>response-time--api-customers</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1072ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>response-time--api-inventory</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1070ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>response-time--api-analytics</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1069ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>response-time--api-pos-sales</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1070ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>response-time--api-marketing-campaigns</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1070ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>response-time--api-loyalty-entries</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1053ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>concurrent-latency</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">8ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>page-load--</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">3ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>page-load--pos</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">3ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>page-load--analytics</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>page-load--inventory</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>page-load--marketing</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>page-load--loyalty</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">0ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>page-load--scheduling</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>page-load--staff</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>streaming-What-is-our-schedule</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">2ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>streaming-Give-me-a-quick-summ</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">1ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>streaming-How-are-our-marketin</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">2ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>memory-leak-detection</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">60398ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>cpu-usage-monitoring</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">30125ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>resource-usage-monitoring</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">30130ms</span>
+                
+                
+            </div>
+            
+            <div class="test-item test-pass">
+                <strong>resources-under-load</strong> 
+                <span style="color: #22c55e">PASS</span>
+                <span style="float: right">15120ms</span>
+                
+                
+            </div>
+            
+        </div>
+        
+    </div>
+
+    <script>
+        // Performance Charts
+        
+    </script>
+</body>
+</html>

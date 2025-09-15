@@ -453,24 +453,30 @@ export class PerformanceOptimizer extends EventEmitter {
     // Clear resource manager cache
     resourceManager.clearCache();
     
-    // Clear require cache for development modules (if in development)
-    if (process.env.NODE_ENV === 'development') {
-      const modulesBefore = Object.keys(require.cache).length;
-      
-      for (const [path] of Object.entries(require.cache)) {
-        // Only clear non-essential modules
-        if (path.includes('/tmp/') || path.includes('/cache/')) {
-          delete require.cache[path];
+    // Note: require.cache is not available in ES modules (production build)
+    // This is only relevant for CommonJS modules in development
+    if (process.env.NODE_ENV === 'development' && typeof require !== 'undefined' && require.cache) {
+      try {
+        const modulesBefore = Object.keys(require.cache).length;
+        
+        for (const [path] of Object.entries(require.cache)) {
+          // Only clear non-essential modules
+          if (path.includes('/tmp/') || path.includes('/cache/')) {
+            delete require.cache[path];
+          }
         }
-      }
-      
-      const modulesAfter = Object.keys(require.cache).length;
-      if (modulesBefore > modulesAfter) {
-        log('Require cache cleaned', {
-          modulesBefore,
-          modulesAfter,
-          cleaned: modulesBefore - modulesAfter
-        });
+        
+        const modulesAfter = Object.keys(require.cache).length;
+        if (modulesBefore > modulesAfter) {
+          log('Require cache cleaned', {
+            modulesBefore,
+            modulesAfter,
+            cleaned: modulesBefore - modulesAfter
+          });
+        }
+      } catch (error) {
+        // Silently handle require.cache errors in production
+        log('Cache cleanup skipped (ES modules)', { reason: 'require.cache not available' });
       }
     }
   }

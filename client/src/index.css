@@ -132,9 +132,12 @@
 
 /* Loading and animation styles */
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
@@ -170,8 +173,13 @@
 
 /* Print/styles for demo reports */
 @media print {
-  .no-print { display: none !important; }
-  body { background: #fff !important; }
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #fff !important;
+  }
 }
 
 /* iOS/Android safe area adjustments */
@@ -190,8 +198,15 @@
 }
 
 /* Print-only utility */
-.print-only { display: none; }
-@media print { .print-only { display: block; } }
+.print-only {
+  display: none;
+}
+
+@media print {
+  .print-only {
+    display: block;
+  }
+}
 
 /* Focus visible outline for keyboard users */
 :focus-visible {
@@ -200,27 +215,75 @@
 }
 
 /* Route fade-in animation */
-.route-fade { animation: routefade 180ms ease-out; }
-@keyframes routefade {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+.route-fade {
+  animation: routefade 180ms ease-out;
+  will-change: opacity, transform;
 }
+
+@keyframes routefade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Performance optimizations */
+.metric-card {
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.sidebar-transition {
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Smooth scrolling for better UX */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Optimize font rendering */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
 .skip-link:focus {
   left: 0;
   top: 0;
   width: auto;
   height: auto;
-  background: #111827; /* gray-900 */
+  background: #111827;
+  /* gray-900 */
   color: white;
   padding: 0.5rem 0.75rem;
   border-radius: 0 0 0.5rem 0.5rem;
   z-index: 1000;
 }
+
 /* Print-only narrow receipt styling for POS dialog */
 @media print {
-  body { background: #fff !important; color: #000 !important; }
-  body * { visibility: hidden !important; }
-  .receipt, .receipt * { visibility: visible !important; }
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .receipt,
+  .receipt * {
+    visibility: visible !important;
+  }
+
   .receipt {
     position: absolute;
     left: 0;

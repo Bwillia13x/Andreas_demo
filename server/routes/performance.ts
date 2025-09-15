@@ -7,6 +7,7 @@ import { Router } from 'express';
 import { performanceMonitor } from '../../lib/performance-monitor';
 import { performanceDashboard } from '../../lib/performance-dashboard';
 import { performanceOptimizer } from '../../lib/performance-optimizer';
+import { prometheusMetricsMiddleware } from '../../lib/metrics/prometheus';
 import { log, logError } from '../../lib/log';
 
 const router = Router();
@@ -397,5 +398,11 @@ router.put('/optimizer/config', (req, res) => {
     });
   }
 });
+
+/**
+ * GET /api/performance/metrics/prometheus
+ * Export metrics in Prometheus format
+ */
+router.get('/metrics/prometheus', prometheusMetricsMiddleware);
 
 export default router;
